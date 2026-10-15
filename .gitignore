@@ -1,0 +1,18 @@
+# sbt
+target/
+project/target/
+project/project/
+
+# Build Server Protocol
+.bsp/
+
+# IntelliJ IDEA
+.idea/
+*.iml
+
+# Scala
+.metals/
+.bloop/
+
+# OS
+.DS_Store
