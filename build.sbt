@@ -1,10 +1,9 @@
 scalaVersion := "3.9.0"
 
-lazy val root = rootProject
+lazy val root = (project in file("."))
   .settings(
     name := "project-monopoly",
     libraryDependencies ++= Seq(
-      "org.scalatest" %% "scalatest" % "3.2.19" % Test,
-      "org.scalameta" %% "munit" % "1.2.3" % Test
+      "org.scalatest" %% "scalatest" % "3.2.20" % Test
     )
   )
