@@ -32,6 +32,13 @@ class GameStateSpec extends AnyWordSpec with Matchers:
       val updated = state.movePlayer(8)
       updated.players(0).position shouldBe 8
 
+    "check if the game is over" in:
+      val bankruptedPlayers = Vector(Player("Alice", isBankrupt = true), Player("Bob"))
+      val stateBankrupts = GameState(players = bankruptedPlayers, propertyMap = Map.empty)
+      val updated = stateBankrupts.checkGameOver
+      updated.gameOver shouldBe true
+
+
 
 
 
