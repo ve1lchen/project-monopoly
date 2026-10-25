@@ -1,9 +1,12 @@
+import scala.language.postfixOps
+
 case class Player(
     name: String,
     money: Int = 1500,
     position: Int = 0,
     inJail: Boolean = false,
-    onVacation: Boolean = false
+    onVacation: Boolean = false,
+    isBankrupt: Boolean = false
 ):
   def pay(amount: Int): Player =
     if amount > 0 then
