@@ -2,7 +2,7 @@ case class GameState(
     players: Vector[Player],
     currentPlayerIndex: Int = 0,
     gameOver: Boolean = false,
-    propertyMap: Map[Int, Player] // TODO Change to [Player, Field] as the Field class is implemented.
+    propertyMap: Map[Int, Int] // PlayerID:FieldID
 ):
 
   def isGameOver: Boolean = ??? // TODO Implement when isBankrupt added to Player class
@@ -15,4 +15,4 @@ case class GameState(
     val updatedPlayers = players.updated(currentPlayerIndex, players(currentPlayerIndex).move(steps))
     copy(players = updatedPlayers)
 
-  def updatePropertyMap(propertyMap: Map[Int, Player]): GameState = ??? // TODO Implement when the first TODO is done
+  def updatePropertyMap(propertyMap: Map[Int, Int]): GameState = ??? // TODO Implement when the first TODO is done
