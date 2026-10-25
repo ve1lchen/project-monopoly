@@ -1,14 +1,14 @@
 case class GameState(
     players: Vector[Player],
     currentPlayerIndex: Int = 0,
-    gameOver: Boolean = false,
+    isGameOver: Boolean = false,
     propertyMap: Map[Int, Int] // PlayerID:FieldID
 ):
 
   def checkGameOver: GameState = // TODO Implement when isBankrupt added to Player class
     var notBankrupts: Int = 0
     for (player <- players) if !player.isBankrupt then notBankrupts += 1
-    copy(gameOver= notBankrupts == 1)
+    copy(isGameOver= notBankrupts == 1)
 
   def nextTurn(isDouble: Boolean): GameState =
     val nextIndex = if isDouble then currentPlayerIndex else (currentPlayerIndex + 1) % players.length

@@ -36,7 +36,7 @@ class GameStateSpec extends AnyWordSpec with Matchers:
       val bankruptedPlayers = Vector(Player("Alice", isBankrupt = true), Player("Bob"))
       val stateBankrupts = GameState(players = bankruptedPlayers, propertyMap = Map.empty)
       val updated = stateBankrupts.checkGameOver
-      updated.gameOver shouldBe true
+      updated.isGameOver shouldBe true
 
 
 
