@@ -10,8 +10,8 @@ flowchart TD
     GS["GameState<br/>Immutable game state"]
     D["Dice<br/>Generates two dice values"]
     P["Player<br/>Money, position, jail status"]
-    B["Board<br/>40 fields in order"]
-    F["Field<br/>Type, price, rent, etc."]
+    B["internal.Board<br/>40 fields in order"]
+    F["internal.Field<br/>Type, price, rent, etc."]
 
     UI --> GC
     GC --> D
@@ -84,13 +84,13 @@ This diagram represents the simplified turn flow. Additional rules such as jail,
 - [ ] GameController
 - [ ] Game logic unit tests (partially implemented)
 
-### Board Model
+### internal.Board Model
 
 - [x] FieldType (initial enum)
-- [ ] Field
-- [ ] Board
-- [ ] Field properties (price, rent, etc.)
-- [ ] Board and field unit tests
+- [ ] internal.Field
+- [ ] internal.Board
+- [ ] internal.Field properties (price, rent, etc.)
+- [ ] internal.Board and field unit tests
 
 ### User Interface
 
@@ -127,7 +127,7 @@ Property ownership is planned to be represented using:
 propertyMap: Map[Int, Int]
 ```
 
-- **Key:** Board position
+- **Key:** internal.Board position
 - **Value:** Player ID
 
 Player IDs should remain stable throughout the game.
@@ -141,7 +141,7 @@ Game logic should be testable independently of random dice rolls and the user in
 ## 6. Planned Features
 
 - [ ] Complete player functionality
-- [ ] Board and field implementation
+- [ ] internal.Board and field implementation
 - [ ] GameController and turn execution
 - [ ] Property purchasing
 - [ ] Rent payments

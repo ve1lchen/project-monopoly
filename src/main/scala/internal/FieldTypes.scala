@@ -1,3 +1,5 @@
+package internal
+
 object FieldTypes
 
 enum FieldType:
