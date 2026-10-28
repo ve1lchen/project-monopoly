@@ -42,7 +42,7 @@ flowchart TD
 | Component | Status | Responsibility |
 |---|---|---|
 | `Player` | 🟡 Partial | Stores player data and provides immutable operations such as `move()` and `pay()`. |
-| `Dice` | 🟢 Done | Generates two random dice values. |
+| `RandomDice$` | 🟢 Done | Generates two random dice values. |
 | `GameState` | 🟡 Partial | Stores players, current turn, game-over status and property ownership. |
 | `GameController` | 🔵 Planned | Coordinates turns and handles game rules, purchases and rent. |
 | `Board` | 🔵 Planned | Contains the ordered collection of 40 fields. |

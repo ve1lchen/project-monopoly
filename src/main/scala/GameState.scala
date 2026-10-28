@@ -1,8 +1,11 @@
+import internal.DummyBoard
+
 case class GameState(
     players: Vector[Player],
     currentPlayerIndex: Int = 0,
     isGameOver: Boolean = false,
-    propertyMap: Map[Int, Int] = Map.empty // PlayerID:FieldID
+    propertyMap: Map[Int, Int] = Map.empty, // FieldID : PlayerID
+    board: DummyBoard = DummyBoard()
 ):
 
   def checkGameOver: GameState =
@@ -15,10 +18,13 @@ case class GameState(
     copy(currentPlayerIndex = nextIndex)
 
   def movePlayer(steps: (Int, Int)): GameState =
-    val updatedPlayers = players.updated(currentPlayerIndex, players(currentPlayerIndex).move(steps._1 + steps._2))
+    val newPosition = (players(currentPlayerIndex).position + steps._2 + steps._1) % board.size
+    val updatedPlayers = players.updated(currentPlayerIndex, players(currentPlayerIndex).changePosition(newPosition))
     copy(players = updatedPlayers)
 
-  def updatePropertyMap(propertyMap: Map[Int, Int], playerId: Int, fieldId:Int): GameState =
-    val updatedMap = propertyMap + (playerId -> fieldId)
+  def updatePropertyMap(fieldId: Int, playerId:Int): GameState =
+    val updatedMap = propertyMap + (fieldId -> playerId)
     copy(propertyMap = updatedMap)
-    
+
+  def getCurrentPlayer: Player =
+    players(currentPlayerIndex)

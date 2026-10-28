@@ -1,46 +1,36 @@
 import scala.io.StdIn
+import internal.RandomDice
 import internal.Dice
 import internal.DummyBoard
+import internal.FieldType.Business
 
-class GameController(playersCounter: Int):
-  var state: GameState = startGame(playersCounter)
-  var board: DummyBoard = DummyBoard()
+class GameController(
+    initialState: GameState,
+    dice: Dice
+                    ):
 
-  def init(): Unit =
-    var playersList: List[Player] = List()
-    for (i <- 1 to playersCounter) {
-      println(s"Enter $i player`s name:\n")
-      playersList = createPlayer() :: playersList
-    }
-    state = GameState(players = playersList.reverse.toVector)
-
-  private def createPlayer(): Player =
-    val name = StdIn.readLine()
-    Player(name=name)
-
-  private def startGame(playersCounter: Int): GameState =
-    var playersList: List[Player] = List()
-    for (i <- 1 to playersCounter){
-      println(s"Enter $i player`s name:\n")
-      playersList = createPlayer() :: playersList
-    }
-    print(playersList.reverse)
-    GameState(players = playersList.reverse.toVector)
+  private var state: GameState = initialState
+  private val board: DummyBoard = state.board
 
   def processField(position: Int): Unit =
     val field = board.getField(position)
-    if !state.propertyMap.exists(_._2 == position) then
-      println(s"Field ${field.name} has no owner.") else
-      println(s"Field ${field.name} already has an owner.")
+    if !state.propertyMap.contains(position) then
+      println(s"Field ${field.name} has no owner.\n") else
+      println(s"Field ${field.name} already has an owner.\n")
 
   def playTurn(): Unit =
-    val steps: (Int, Int) = Dice.roll()
-    state.movePlayer(steps)
-    val player: Player = state.players(state.currentPlayerIndex)
-    processField(player.position)
+    val steps: (Int, Int) = dice.roll()
+    println(s"${state.getCurrentPlayer.name} rolled: ${steps._1}, ${steps._2}")
+    state = state.movePlayer(steps)
+    processField(state.getCurrentPlayer.position)
+    state = state.nextTurn(steps._2 == steps._1)
 
+  def buyProperty(): Unit =
+    val player = state.getCurrentPlayer
+    val field = state.board.getField(player.position)
+    if field.fieldType == Business && player.money >= field.cost && !state.propertyMap.contains(player.position) then
+      state = state.copy(players = state.players.updated(state.currentPlayerIndex, state.players(state.currentPlayerIndex).pay(field.cost)))
+      state = state.updatePropertyMap(player.position, state.currentPlayerIndex)
 
-
-@main def main(): Unit =
-  val controller = GameController(2)
-  controller.playTurn()
+  def getState: GameState =
+    state

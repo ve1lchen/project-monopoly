@@ -20,5 +20,5 @@ case class Player(
     else
       this
 
-  def move(steps: Int): Player =
-    copy(position = position + steps)
+  def changePosition(newPosition: Int): Player =
+    copy(position = newPosition)

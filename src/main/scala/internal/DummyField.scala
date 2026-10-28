@@ -1,7 +1,7 @@
 package internal
 
 case class DummyField (
-  val cost: Int,
+  cost: Int,
   rent: Int,
   name: String,
   fieldType: FieldType

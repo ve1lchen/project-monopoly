@@ -3,4 +3,4 @@ package internal
 object FieldTypes
 
 enum FieldType:
-  case Street, Station, Utility, Start, Event, Communal, IncomeTax, AdditionalTax, Parking, Jail
+  case Business, Start, Event, Communal, IncomeTax, AdditionalTax, Vacation, Jail
