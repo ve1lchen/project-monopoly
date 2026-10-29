@@ -6,7 +6,8 @@ case class Player(
     position: Int = 0,
     inJail: Boolean = false,
     onVacation: Boolean = false,
-    isBankrupt: Boolean = false
+    isBankrupt: Boolean = false,
+    id: Int = -1
 ):
   def pay(amount: Int): Player =
     if amount > 0 then copy(money = money - amount)

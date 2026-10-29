@@ -13,7 +13,7 @@ case class GameState(
     players: Vector[Player],
     currentPlayerIndex: Int = 0,
     isGameOver: Boolean = false,
-    propertyMap: Map[DummyField, Player] = Map.empty, // Field: Player
+    propertyMap: Map[DummyField, Int] = Map.empty, // Field: PlayerID
     board: DummyBoard = DummyBoard(),
     lastRoll: (Int, Int) = (0 , 0),
     turnPhase: TurnPhase.turnPhases = AwaitingRoll
@@ -51,7 +51,7 @@ case class GameState(
   Adds new field:player relation to the map
    */
   def updatePropertyMap(field: DummyField, player: Player): GameState =
-    val updatedMap = propertyMap + (field -> player)
+    val updatedMap = propertyMap + (field -> player.id)
     copy(propertyMap = updatedMap)
 
   def getCurrentPlayer: Player =

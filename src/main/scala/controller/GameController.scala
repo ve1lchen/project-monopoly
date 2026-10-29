@@ -35,7 +35,7 @@ class GameController(
     val field = state.board.getField(player.position)
 
     state.propertyMap.get(field) match
-      case Some(owner) if owner == state.getCurrentPlayer => OwnerIsYou
+      case Some(ownerId) if ownerId == state.getCurrentPlayer.id => OwnerIsYou
       case Some(_) => AlreadyOwned
       case None if field.fieldType != Business => NotPurchasable
       case None if player.money < field.cost => InsufficientFunds
@@ -53,4 +53,5 @@ class GameController(
 
   def getCurrentFieldOwner: Option[Player] =
     val field = getCurrentField(state.getCurrentPlayer)
-    state.propertyMap.get(field)
+    state.propertyMap.get(field).flatMap: id =>
+      state.players.find(_.id == id)
