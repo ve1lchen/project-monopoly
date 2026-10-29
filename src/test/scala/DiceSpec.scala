@@ -1,5 +1,4 @@
-import internal.RandomDice
-import internal.FixedDice
+import model.{FixedDice, RandomDice}
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.matchers.should.Matchers
 

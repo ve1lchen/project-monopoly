@@ -1,4 +1,4 @@
-import internal.DummyBoard
+package model
 
 case class GameState(
     players: Vector[Player],
@@ -10,19 +10,24 @@ case class GameState(
 
   def checkGameOver: GameState =
     var notBankrupts: Int = 0
-    for (player <- players) if !player.isBankrupt then notBankrupts += 1
-    copy(isGameOver= notBankrupts == 1)
+    for player <- players do if !player.isBankrupt then notBankrupts += 1
+    copy(isGameOver = notBankrupts == 1)
 
   def nextTurn(isDouble: Boolean): GameState =
-    val nextIndex = if isDouble then currentPlayerIndex else (currentPlayerIndex + 1) % players.length
+    val nextIndex = if isDouble then currentPlayerIndex
+    else (currentPlayerIndex + 1) % players.length
     copy(currentPlayerIndex = nextIndex)
 
   def movePlayer(steps: (Int, Int)): GameState =
-    val newPosition = (players(currentPlayerIndex).position + steps._2 + steps._1) % board.size
-    val updatedPlayers = players.updated(currentPlayerIndex, players(currentPlayerIndex).changePosition(newPosition))
+    val newPosition =
+      (players(currentPlayerIndex).position + steps._2 + steps._1) % board.size
+    val updatedPlayers = players.updated(
+      currentPlayerIndex,
+      players(currentPlayerIndex).changePosition(newPosition)
+    )
     copy(players = updatedPlayers)
 
-  def updatePropertyMap(fieldId: Int, playerId:Int): GameState =
+  def updatePropertyMap(fieldId: Int, playerId: Int): GameState =
     val updatedMap = propertyMap + (fieldId -> playerId)
     copy(propertyMap = updatedMap)
 

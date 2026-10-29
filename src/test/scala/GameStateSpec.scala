@@ -1,3 +1,4 @@
+import model.{GameState, Player}
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.matchers.should.Matchers
 
@@ -13,7 +14,7 @@ class GameStateSpec extends AnyWordSpec with Matchers:
     propertyMap = Map.empty
   )
 
-  "A GameState" should:
+  "A model.GameState" should:
 
     "switch to the next player" in:
       val updated = state.nextTurn(false)

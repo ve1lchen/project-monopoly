@@ -6,12 +6,12 @@
 ```mermaid
 flowchart TD
     UI["ConsoleUI<br/>Displays game and reads input"]
-    GC["GameController<br/>Coordinates turns and rules"]
-    GS["GameState<br/>Immutable game state"]
+    GC["controller.GameController<br/>Coordinates turns and rules"]
+    GS["model.GameState<br/>Immutable game state"]
     D["Dice<br/>Generates two dice values"]
-    P["Player<br/>Money, position, jail status"]
-    B["internal.Board<br/>40 fields in order"]
-    F["internal.Field<br/>Type, price, rent, etc."]
+    P["model.Player<br/>Money, position, jail status"]
+    B["model.Board<br/>40 fields in order"]
+    F["model.Field<br/>Type, price, rent, etc."]
 
     UI --> GC
     GC --> D
@@ -56,19 +56,19 @@ The `GameController` coordinates a turn by calling methods from other components
 ```mermaid
 sequenceDiagram
     participant UI as ConsoleUI
-    participant C as GameController
+    participant C as controller.GameController
     participant D as Dice
-    participant S as GameState
+    participant S as model.GameState
 
     UI->>C: playTurn(state)
     C->>D: roll()
     D-->>C: (3, 4)
     C->>S: movePlayer(7)
-    S-->>C: updated GameState
+    S-->>C: updated model.GameState
     Note over C: Handle field action (TODO)
     C->>S: nextTurn(false)
-    S-->>C: next GameState
-    C-->>UI: updated GameState
+    S-->>C: next model.GameState
+    C-->>UI: updated model.GameState
     UI->>UI: Render new state
 ```
 
@@ -79,25 +79,25 @@ This diagram represents the simplified turn flow. Additional rules such as jail,
 ### Game Logic
 
 - [x] Dice
-- [ ] Player (partially implemented)
-- [ ] GameState (partially implemented)
-- [ ] GameController
+- [ ] model.Player (partially implemented)
+- [ ] model.GameState (partially implemented)
+- [ ] controller.GameController
 - [ ] Game logic unit tests (partially implemented)
 
-### internal.Board Model
+### model.Board Model
 
 - [x] FieldType (initial enum)
-- [ ] internal.Field
-- [ ] internal.Board
-- [ ] internal.Field properties (price, rent, etc.)
-- [ ] internal.Board and field unit tests
+- [ ] model.Field
+- [ ] model.Board
+- [ ] model.Field properties (price, rent, etc.)
+- [ ] model.Board and field unit tests
 
 ### User Interface
 
 - [ ] ConsoleUI
 - [ ] Main menu
 - [ ] Game board rendering
-- [ ] Player interaction
+- [ ] model.Player interaction
 - [ ] Graphical UI (later stage)
 
 ## 5. Design Decisions
@@ -127,10 +127,10 @@ Property ownership is planned to be represented using:
 propertyMap: Map[Int, Int]
 ```
 
-- **Key:** internal.Board position
-- **Value:** Player ID
+- **Key:** model.Board position
+- **Value:** model.Player ID
 
-Player IDs should remain stable throughout the game.
+model.Player IDs should remain stable throughout the game.
 
 ### Testing
 
@@ -141,8 +141,8 @@ Game logic should be testable independently of random dice rolls and the user in
 ## 6. Planned Features
 
 - [ ] Complete player functionality
-- [ ] internal.Board and field implementation
-- [ ] GameController and turn execution
+- [ ] model.Board and field implementation
+- [ ] controller.GameController and turn execution
 - [ ] Property purchasing
 - [ ] Rent payments
 - [ ] Jail mechanics

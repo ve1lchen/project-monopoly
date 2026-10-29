@@ -1,4 +1,6 @@
-package internal
+package model
+
+import model.{Field, FieldType}
 
 case class DummyField (
   cost: Int,

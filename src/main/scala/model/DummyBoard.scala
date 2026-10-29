@@ -1,4 +1,6 @@
-package internal
+package model
+
+import model.{DummyField, Field, FieldType}
 
 case class DummyBoard(
     fields: Vector[DummyField] = Vector(DummyField(0, 0, "Start", FieldType.Start),

@@ -1,4 +1,4 @@
-package internal
+package model
 
 class RandomDice extends Dice:
   def roll(): (Int, Int) =

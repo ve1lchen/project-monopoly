@@ -1,8 +1,10 @@
+package controller
+
+import model.FieldType.Business
+import model.{Dice, DummyBoard, RandomDice}
+import model.GameState
+
 import scala.io.StdIn
-import internal.RandomDice
-import internal.Dice
-import internal.DummyBoard
-import internal.FieldType.Business
 
 class GameController(
     initialState: GameState,
@@ -15,8 +17,7 @@ class GameController(
   def processField(position: Int): Unit =
     val field = board.getField(position)
     if !state.propertyMap.contains(position) then
-      println(s"Field ${field.name} has no owner.\n") else
-      println(s"Field ${field.name} already has an owner.\n")
+      println(s"Field ${field.name} has no owner.\n")
 
   def playTurn(): Unit =
     val steps: (Int, Int) = dice.roll()

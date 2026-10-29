@@ -1,10 +1,11 @@
-import internal.{FixedDice, RandomDice}
+import controller.GameController
+import model.{FixedDice, GameState, Player, RandomDice}
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.matchers.should.Matchers
 
 class GameControllerSpec extends AnyWordSpec with Matchers:
 
-  "A GameController" should:
+  "A controller.GameController" should:
     "initialize with correct players" in:
       val players: Vector[Player] = Vector(Player("Alice"), Player("Renee"))
       val controller = GameController(GameState(players), new RandomDice)

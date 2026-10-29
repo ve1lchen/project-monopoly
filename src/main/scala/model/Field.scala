@@ -1,4 +1,4 @@
-package internal
+package model
 
 trait Field:
   val cost: Int

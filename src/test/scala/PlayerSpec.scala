@@ -1,9 +1,10 @@
+import model.Player
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.matchers.should.Matchers
 
 class PlayerSpec extends  AnyWordSpec with Matchers:
 
-  "A Player" should {
+  "A model.Player" should {
 
     "start with 1500 money" in {
       val player = Player("Rene")
