@@ -17,5 +17,5 @@ case class DummyBoard(
                      ):
   def size: Int = fields.size
 
-  def getField(position: Int): Field =
+  def getField(position: Int): DummyField =
     fields(position)

@@ -1,8 +1,7 @@
 package controller
 
 import model.FieldType.Business
-import model.{Dice, DummyBoard, RandomDice}
-import model.GameState
+import model.{Dice, DummyBoard, GameState, Player, RandomDice, DummyField}
 
 import scala.io.StdIn
 
@@ -35,3 +34,6 @@ class GameController(
 
   def getState: GameState =
     state
+  
+  def getCurrentField(player: Player): DummyField =
+    state.board.getField(player.position)
