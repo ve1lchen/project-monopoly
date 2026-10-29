@@ -29,7 +29,7 @@ class PlayerSpec extends  AnyWordSpec with Matchers:
 
     "move while playing" in {
       val player = Player("Rene")
-      val updated = player.move(4)
+      val updated = player.changePosition(4)
       updated.position shouldBe 4
     }
 

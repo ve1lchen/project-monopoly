@@ -1,3 +1,5 @@
+package internal
+
 trait Field:
   val cost: Int
   val rent: Int

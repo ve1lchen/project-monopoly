@@ -29,7 +29,7 @@ class GameStateSpec extends AnyWordSpec with Matchers:
       updated.currentPlayerIndex shouldBe 0
 
     "move the current player" in:
-      val updated = state.movePlayer(8)
+      val updated = state.movePlayer((4,4))
       updated.players(0).position shouldBe 8
 
     "check if the game is over" in:
