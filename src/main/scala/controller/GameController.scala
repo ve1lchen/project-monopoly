@@ -1,10 +1,9 @@
 package controller
 
-import model.FieldType.Business
-import model.{Dice, DummyBoard, RandomDice}
-import model.GameState
-
-import scala.io.StdIn
+import model.ResultStatus.{AlreadyOwned, InsufficientFunds, NotPurchasable, OwnerIsYou, Success}
+import model.FieldType.{Business}
+import model.TurnPhase.turnPhases.{AwaitingAction, AwaitingRoll}
+import model.{ResultStatus, Dice, Board, Field, GameState, Player}
 
 class GameController(
     initialState: GameState,
@@ -12,26 +11,60 @@ class GameController(
                     ):
 
   private var state: GameState = initialState
-  private val board: DummyBoard = state.board
+  private val board: Board = state.board
+  private var observers: Vector[Observer] = Vector.empty
 
-  def processField(position: Int): Unit =
-    val field = board.getField(position)
-    if !state.propertyMap.contains(position) then
-      println(s"Field ${field.name} has no owner.\n")
+  def addObserver(observer: Observer): Unit =
+    observers = observers :+ observer
 
-  def playTurn(): Unit =
-    val steps: (Int, Int) = dice.roll()
-    println(s"${state.getCurrentPlayer.name} rolled: ${steps._1}, ${steps._2}")
-    state = state.movePlayer(steps)
-    processField(state.getCurrentPlayer.position)
-    state = state.nextTurn(steps._2 == steps._1)
+  private def notifyObservers(): Unit =
+    observers.foreach(_.update())
 
-  def buyProperty(): Unit =
+  /*
+  Rolls dices -> saves the travel -> processes the field
+   */
+  def rollDice(): Unit =
+    if state.turnPhase == AwaitingRoll then
+      val rolled = dice.roll()
+      state = state.movePlayer(rolled)
+      notifyObservers()
+
+
+  /*
+  Ends Turn only after roll
+   */
+  def endTurn(): Unit =
+    if state.turnPhase == AwaitingAction then
+      val isDouble = state.lastRoll.exists { case (_, (a, b)) => a == b }
+      state = state.nextTurn(isDouble)
+      notifyObservers()
+
+
+  def buyProperty(): ResultStatus =
     val player = state.getCurrentPlayer
     val field = state.board.getField(player.position)
-    if field.fieldType == Business && player.money >= field.cost && !state.propertyMap.contains(player.position) then
-      state = state.copy(players = state.players.updated(state.currentPlayerIndex, state.players(state.currentPlayerIndex).pay(field.cost)))
-      state = state.updatePropertyMap(player.position, state.currentPlayerIndex)
+    val fieldId = player.position
+
+    state.propertyMap.get(fieldId) match
+      case Some(ownerId) if ownerId == state.getCurrentPlayer.id => OwnerIsYou
+      case Some(_) => AlreadyOwned
+      case None if field.fieldType != Business => NotPurchasable
+      case None if player.money < field.cost => InsufficientFunds
+      case None =>
+        val updatedPlayers = state.players.updated(state.currentPlayerIndex, player.pay(field.cost))
+        state = state.copy(players = updatedPlayers)
+          .updatePropertyMap(fieldId, player.id)
+        notifyObservers()
+        Success
+
 
   def getState: GameState =
     state
+
+  def getCurrentField(player: Player): Field =
+    state.board.getField(player.position)
+
+  def getCurrentFieldOwner: Option[Player] =
+    val fieldId = state.getCurrentPlayer.position
+    state.propertyMap.get(fieldId).flatMap: id =>
+      state.players.find(_.id == id)
