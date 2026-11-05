@@ -1,156 +1,158 @@
-
 # Monopoly — Project Architecture
 
-## 1. Architecture Overview
+## Current Scope
+
+This university project implements Monopoly in Scala 3 with sbt and ScalaTest.
+The current console prototype supports rolling dice, moving around a board,
+buying properties, switching turns and displaying results when the user exits.
+A GUI and further game rules are planned.
+
+`DummyBoard` and `DummyField` are temporary placeholders used while the other
+team member develops the board and field classes. They allow game logic and UI
+work to continue independently. Their layout, prices and rents are sample data,
+not the final Monopoly board or rules.
+
+## Components and Dependencies
 
 ```mermaid
 flowchart TD
-    UI["ConsoleUI<br/>Displays game and reads input"]
-    GC["controller.GameController<br/>Coordinates turns and rules"]
-    GS["model.GameState<br/>Immutable game state"]
-    D["Dice<br/>Generates two dice values"]
-    P["model.Player<br/>Money, position, jail status"]
-    B["model.Board<br/>40 fields in order"]
-    F["model.Field<br/>Type, price, rent, etc."]
-
+    Main["monopoly.main"] --> UI["view.ConsoleUI"]
+    Main --> GC["controller.GameController"]
     UI --> GC
-    GC --> D
-    GC --> GS
-    GS --> P
-    GS -.-> B
+    UI -. "implements" .-> O["controller.Observer"]
+    GC --> O
+    GC --> D["model.Dice"]
+    GC --> GS["model.GameState"]
+    GC --> B["model.Board"]
+    GC --> F["model.Field"]
+    GS --> P["model.Player"]
+    GS --> B
     B --> F
-    GC -.-> B
-
-    classDef existing fill:#d9f1e5,stroke:#28805b,color:#174b35
-    classDef planned fill:#e5edff,stroke:#577cc0,color:#263f75
-    classDef partial fill:#fff0ce,stroke:#bd8b30,color:#684a10
-
-    class D existing
-    class P,GS partial
-    class UI,GC,B,F planned
+    DB["model.DummyBoard (temporary)"] -. "implements" .-> B
+    DF["model.DummyField (temporary)"] -. "implements" .-> F
+    DB --> DF
 ```
 
-**Legend:**
-- 🟢 Green — Implemented
-- 🟡 Yellow — Partially implemented
-- 🔵 Blue — Planned
-- Solid arrows — Component dependencies
-- Dashed arrows — Planned dependencies
+Solid arrows show dependencies; dashed arrows show interface implementations.
 
-## 2. Component Responsibilities
+| Component | Current responsibility and status |
+|---|---|
+| `Player` | Immutable player data; `pay`, `receive` and `changePosition`. Jail, vacation and bankruptcy flags are stored, but their rules are unfinished. |
+| `Dice` | Interface for rolling two dice. `RandomDice` generates values; `FixedDice` supplies deterministic values for tests. |
+| `GameState` | Immutable players, current player index, property ownership, board, last roll and turn phase. Includes a standalone game-over check. |
+| `GameController` | Holds the current state, coordinates rolls, turn changes and purchases, and notifies observers after successful state changes. Further rules are unfinished. |
+| `Observer` | Defines `update(): Unit` for change notifications. |
+| `ConsoleUI` | Reads commands, observes the controller, renders the current state and displays results on exit. |
+| `Board` | Interface exposing `size: Int` and `getField(position: Int): Field`. |
+| `Field` | Interface exposing `cost`, `rent`, `name` and `fieldType`. |
+| `DummyBoard`, `DummyField` | Temporary implementations pending integration of the other team member's classes. The default board has 11 fields: Start and 10 businesses. |
+| `FieldType` | Initial enum of field categories; most category-specific actions are not implemented. |
+| `ResultStatus` | Purchase outcomes: `Success`, `NotPurchasable`, `OwnerIsYou`, `AlreadyOwned` and `InsufficientFunds`. |
 
-| Component | Status | Responsibility |
-|---|---|---|
-| `Player` | 🟡 Partial | Stores player data and provides immutable operations such as `move()` and `pay()`. |
-| `RandomDice$` | 🟢 Done | Generates two random dice values. |
-| `GameState` | 🟡 Partial | Stores players, current turn, game-over status and property ownership. |
-| `GameController` | 🔵 Planned | Coordinates turns and handles game rules, purchases and rent. |
-| `Board` | 🔵 Planned | Contains the ordered collection of 40 fields. |
-| `Field` | 🔵 Planned | Represents a board location and its properties. |
-| `ConsoleUI` | 🔵 Planned | Displays information and handles user input without implementing game rules. |
+## Turn Execution
 
-## 3. Turn Execution
-
-The `GameController` coordinates a turn by calling methods from other components.
+The turn phases are `TurnPhase.turnPhases.AwaitingRoll` and `AwaitingAction`.
 
 ```mermaid
 sequenceDiagram
     participant UI as ConsoleUI
-    participant C as controller.GameController
+    participant C as GameController
     participant D as Dice
-    participant S as model.GameState
+    participant S as GameState
 
-    UI->>C: playTurn(state)
+    UI->>C: rollDice()
+    Note over C: Only in AwaitingRoll
     C->>D: roll()
     D-->>C: (3, 4)
-    C->>S: movePlayer(7)
-    S-->>C: updated model.GameState
-    Note over C: Handle field action (TODO)
-    C->>S: nextTurn(false)
-    S-->>C: next model.GameState
-    C-->>UI: updated model.GameState
-    UI->>UI: Render new state
+    C->>S: movePlayer((3, 4))
+    S-->>C: Updated state in AwaitingAction
+    C->>UI: update()
+    UI->>C: getState / field queries
+    Note over UI: Render updated state
+    opt Buy current property
+        UI->>C: buyProperty()
+        Note over C: Validate ownership, field type and funds
+        Note over C: On success, replace state and notify observers
+        C-->>UI: ResultStatus
+    end
+    UI->>C: endTurn()
+    Note over C: Only in AwaitingAction
+    C->>S: nextTurn(isDouble)
+    S-->>C: Updated state in AwaitingRoll
+    C->>UI: update()
 ```
 
-This diagram represents the simplified turn flow. Additional rules such as jail, property purchases, rent and bankruptcy will be added later.
+Movement wraps using `board.size`. A double keeps the current player for another
+roll; otherwise the index advances to the next player. A second roll before
+ending the turn and an end-turn command before rolling are ignored.
+`buyProperty()` currently has no turn-phase restriction.
 
-## 4. Division of Work
+## State and Identity
 
-### Game Logic
+`Player` and `GameState` are case classes. Their operations return updated copies.
+The controller stores the latest `GameState` in a private variable; input-loop
+state, observer registration and configurable test dice also use mutable state.
 
-- [x] Dice
-- [ ] model.Player (partially implemented)
-- [ ] model.GameState (partially implemented)
-- [ ] controller.GameController
-- [ ] Game logic unit tests (partially implemented)
+Property ownership is represented by `propertyMap: Map[Int, Int]`:
 
-### model.Board Model
+- Key: board position.
+- Value: player ID.
 
-- [x] FieldType (initial enum)
-- [ ] model.Field
-- [ ] model.Board
-- [ ] model.Field properties (price, rent, etc.)
-- [ ] model.Board and field unit tests
+Player IDs must be unique and stable for ownership lookup. `monopoly.main`
+assigns explicit IDs, but the model currently permits duplicate IDs and defaults
+to `-1`.
 
-### User Interface
+`lastRoll: Option[(Int, (Int, Int))]` is `None` before the first roll. The first
+integer currently stores the **index in `players`**, followed by the two dice
+values. It is not a player ID, despite the source comment. The UI uses that
+index to display the player who rolled, including after a turn change.
 
-- [ ] ConsoleUI
-- [ ] Main menu
-- [ ] Game board rendering
-- [ ] model.Player interaction
-- [ ] Graphical UI (later stage)
+## Integration with the Board and Field Implementation
 
-## 5. Design Decisions
+The other team member owns development of the concrete board and field classes.
+`DummyBoard` and `DummyField` bridge that unfinished integration and should be
+replaced when the real implementations are ready.
 
-### Immutability
+Game state and controller APIs use `Board` and `Field`, so a compatible board can
+be supplied through `GameState(players = players, board = actualBoard)`.
+`GameState` currently defaults to `DummyBoard()`; the application entry point
+uses this default. Tests also rely on the placeholder layout and prices.
 
-We use immutable data structures wherever possible.
+Before replacing the placeholders, agree on the `Board` and `Field` contracts,
+position numbering and field categories. Update application wiring and tests
+that depend on sample data. The current interfaces are integration contracts in
+this branch; they do not imply that the other member's implementation is already
+compatible. The target full board has 40 fields, but `Board` does not enforce a
+particular size.
 
-State changes return new objects using `copy()` rather than modifying existing objects.
+## Testing and Build
 
-### Separation of Concerns
+Tests use ScalaTest `AnyWordSpec` and `Matchers`. Model, controller and view tests
+are organized into matching packages; `MonopolySpec` tests the entry point.
+UI tests provide input streams and capture output. `FixedDice` makes movement
+deterministic.
 
-Each component has a specific responsibility:
-
-- `Player` manages individual player data.
-- `GameState` stores the current game state.
-- `GameController` coordinates actions and applies game rules.
-- `Board` defines the board layout.
-- `Field` describes individual board locations.
-- `ConsoleUI` handles presentation and user input.
-
-### Property Ownership
-
-Property ownership is planned to be represented using:
-
-```scala
-propertyMap: Map[Int, Int]
+```sh
+sbt test
+sbt clean coverage test coverageReport
 ```
 
-- **Key:** model.Board position
-- **Value:** model.Player ID
+The HTML coverage report is generated at
+`target/scala-3.9.0/scoverage-report/index.html`.
+The GitHub Actions workflow runs tests with coverage and then a SonarQube scan
+on pushes to `main` and pull requests. Coverage shows executed code; it does not
+guarantee that all edge cases and game rules have been tested.
 
-model.Player IDs should remain stable throughout the game.
+## Remaining Work and Known Limitations
 
-### Testing
-
-Unit tests use ScalaTest with `AnyWordSpec` and `Matchers`.
-
-Game logic should be testable independently of random dice rolls and the user interface.
-
-## 6. Planned Features
-
-- [ ] Complete player functionality
-- [ ] model.Board and field implementation
-- [ ] controller.GameController and turn execution
-- [ ] Property purchasing
-- [ ] Rent payments
-- [ ] Jail mechanics
-- [ ] Three consecutive doubles rule
-- [ ] Bankruptcy and game-over detection
-- [ ] Console user interface
-- [ ] Graphical user interface
-
----
-
-**Note:** This architecture is an initial design and may change as the project develops.
+- Integrate the other team member's board and field implementations.
+- Implement rent, rewards for crossing Start, field events, taxes, jail,
+  vacation and the three-consecutive-doubles rule.
+- Connect bankruptcy and game-over handling to gameplay. `checkGameOver` counts
+  non-bankrupt players, but the controller never calls it, actions do not check
+  `isGameOver`, and turn changes do not skip bankrupt players.
+- Display purchase failure messages; the UI currently ignores `ResultStatus`.
+- Validate player identity and state inputs, and clarify the `lastRoll` contract.
+- Validate initial `FixedDice` values consistently with `setValues`.
+- Add tests for these edge cases and observer notifications.
+- Add a main menu, full board rendering and a GUI in later stages.
