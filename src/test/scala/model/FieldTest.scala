@@ -1,6 +1,7 @@
 package model
 
 import model.ActionType.{Start, Tax}
+import model.DevelopmentLevel.{FourHouses, Hotel, OneHouse, ThreeHouses, TwoHouses, Undeveloped}
 import org.scalatest.*
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
@@ -87,6 +88,14 @@ class FieldTest extends AnyWordSpec with Matchers{
       }
       "have the name Street" in {
         street.name should be("Street")
+      }
+      "have getRent return rentTable" in {
+        street.getRent(Undeveloped) should be(rent.baseRent)
+        street.getRent(OneHouse) should be(rent.oneHouse)
+        street.getRent(TwoHouses) should be(rent.twoHouses)
+        street.getRent(ThreeHouses) should be(rent.threeHouses)
+        street.getRent(FourHouses) should be(rent.fourHouses)
+        street.getRent(Hotel) should be(rent.hotel)
       }
     }
     "set houseCost=-1 and hotelCost=2 " should {

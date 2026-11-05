@@ -1,5 +1,7 @@
 package model
 
+import model.DevelopmentLevel.*
+
 
 sealed trait Field:
   def name: String
@@ -26,6 +28,8 @@ case class RentStructure(
       && twoHouses <= threeHouses && threeHouses <= fourHouses
       && fourHouses <= hotel, "The rent needs to increase.")}
 
+enum DevelopmentLevel:
+  case Undeveloped, OneHouse, TwoHouses, ThreeHouses, FourHouses, Hotel
 
 case class StandardField(
   name: String, action: Option[ActionType] = None) extends Field
@@ -36,7 +40,16 @@ case class StreetField(price: Int,
   require(houseCost > 0 && hotelCost > 0,
     "The house/hotel-cost must be higher than 0.")
   require(houseCost <= hotelCost,
-    "A hotel should cost the same or more than a house")}
+    "A hotel should cost the same or more than a house")
+
+  def getRent(developmentLevel: DevelopmentLevel): Int =
+    developmentLevel match
+      case Undeveloped  => rentTable.baseRent
+      case OneHouse     => rentTable.oneHouse
+      case TwoHouses    => rentTable.twoHouses
+      case ThreeHouses  => rentTable.threeHouses
+      case FourHouses   => rentTable.fourHouses
+      case Hotel        => rentTable.hotel}
 
 case class StationField(price: Int,
   // The rent depending on the amount of stations the player owns.
@@ -50,10 +63,11 @@ case class StationField(price: Int,
   def getRent(ownedStationsCount: Int): Option[Int] =
     rentTable.lift(ownedStationsCount - 1)}
 
-case class UtilityField(price: Int, name: String = "Utility")
+case class UtilityField(price: Int, name: String = "Utility",
+                        both: Int = 10, one: Int = 4)
   extends PropertyField {
   def getRent(ownsBothUtilities: Boolean, diceRoll: Int): Int = {
     require(diceRoll > 0, "The dice-roll must be higher than 0.")
-    diceRoll * (if ownsBothUtilities then 10 else 4)
+    diceRoll * (if ownsBothUtilities then both else one)
   }
 }
