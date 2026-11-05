@@ -14,7 +14,7 @@ case class DummyBoard(
                           DummyField(100, 50, "Field8", FieldType.Business),
                           DummyField(100, 50, "Field9", FieldType.Business),
                           DummyField(100, 50, "Field10", FieldType.Business))
-                     ):
+                     ) extends Board:
   def size: Int = fields.size
 
   def getField(position: Int): DummyField =

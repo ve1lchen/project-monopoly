@@ -3,7 +3,7 @@ package controller
 import model.ResultStatus.{AlreadyOwned, InsufficientFunds, NotPurchasable, OwnerIsYou, Success}
 import model.FieldType.{Business}
 import model.TurnPhase.turnPhases.{AwaitingAction, AwaitingRoll}
-import model.{ResultStatus, Dice, DummyBoard, DummyField, GameState, Player}
+import model.{ResultStatus, Dice, Board, Field, GameState, Player}
 
 class GameController(
     initialState: GameState,
@@ -11,7 +11,14 @@ class GameController(
                     ):
 
   private var state: GameState = initialState
-  private val board: DummyBoard = state.board
+  private val board: Board = state.board
+  private var observers: Vector[Observer] = Vector.empty
+
+  def addObserver(observer: Observer): Unit =
+    observers = observers :+ observer
+
+  private def notifyObservers(): Unit =
+    observers.foreach(_.update())
 
   /*
   Rolls dices -> saves the travel -> processes the field
@@ -20,6 +27,7 @@ class GameController(
     if state.turnPhase == AwaitingRoll then
       val rolled = dice.roll()
       state = state.movePlayer(rolled)
+      notifyObservers()
 
 
   /*
@@ -29,6 +37,7 @@ class GameController(
     if state.turnPhase == AwaitingAction then
       val isDouble = state.lastRoll.exists { case (_, (a, b)) => a == b }
       state = state.nextTurn(isDouble)
+      notifyObservers()
 
 
   def buyProperty(): ResultStatus =
@@ -45,12 +54,14 @@ class GameController(
         val updatedPlayers = state.players.updated(state.currentPlayerIndex, player.pay(field.cost))
         state = state.copy(players = updatedPlayers)
           .updatePropertyMap(fieldId, player.id)
+        notifyObservers()
         Success
+
 
   def getState: GameState =
     state
 
-  def getCurrentField(player: Player): DummyField =
+  def getCurrentField(player: Player): Field =
     state.board.getField(player.position)
 
   def getCurrentFieldOwner: Option[Player] =

@@ -14,7 +14,7 @@ case class GameState(
     currentPlayerIndex: Int = 0,
     isGameOver: Boolean = false,
     propertyMap: Map[Int, Int] = Map.empty, // FieldId: PlayerID
-    board: DummyBoard = DummyBoard(),
+    board: Board = DummyBoard(),
     lastRoll: Option[(Int, (Int, Int))] = None, // PlayerID, rolled
     turnPhase: TurnPhase.turnPhases = AwaitingRoll
 ):

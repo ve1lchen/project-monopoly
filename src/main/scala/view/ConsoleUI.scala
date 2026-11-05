@@ -1,16 +1,22 @@
 package view
-import controller.GameController
+import controller.{GameController, Observer}
 
 import scala.io.StdIn.readLine
 
 
-class ConsoleUI(controller: GameController):
+class ConsoleUI(controller: GameController) extends Observer:
+
+  controller.addObserver(this)
+
+  override def update(): Unit =
+    render()
 
   def run(): Unit =
     var running = true
+    render()
 
     while running do
-      render()
+
       val input = readLine(">> ")
 
       input match
