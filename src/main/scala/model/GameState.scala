@@ -13,9 +13,9 @@ case class GameState(
     players: Vector[Player],
     currentPlayerIndex: Int = 0,
     isGameOver: Boolean = false,
-    propertyMap: Map[DummyField, Int] = Map.empty, // Field: PlayerID
+    propertyMap: Map[Int, Int] = Map.empty, // FieldId: PlayerID
     board: DummyBoard = DummyBoard(),
-    lastRoll: (Int, Int) = (0 , 0),
+    lastRoll: Option[(Int, (Int, Int))] = None, // PlayerID, rolled
     turnPhase: TurnPhase.turnPhases = AwaitingRoll
 ):
 
@@ -45,13 +45,15 @@ case class GameState(
       currentPlayerIndex,
       players(currentPlayerIndex).changePosition(newPosition)
     )
-    copy(players = updatedPlayers, lastRoll = rolled, turnPhase = AwaitingAction)
+    copy(players = updatedPlayers,
+      lastRoll = Some(currentPlayerIndex, (rolled._1, rolled._2)),
+      turnPhase = AwaitingAction)
 
   /*
   Adds new field:player relation to the map
    */
-  def updatePropertyMap(field: DummyField, player: Player): GameState =
-    val updatedMap = propertyMap + (field -> player.id)
+  def updatePropertyMap(fieldId: Int, playerId: Int): GameState =
+    val updatedMap = propertyMap + (fieldId -> playerId)
     copy(propertyMap = updatedMap)
 
   def getCurrentPlayer: Player =

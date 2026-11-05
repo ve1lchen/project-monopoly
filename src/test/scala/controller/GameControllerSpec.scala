@@ -1,7 +1,9 @@
+package controller
+
 import controller.GameController
 import model.{FixedDice, GameState, Player, RandomDice}
-import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
 class GameControllerSpec extends AnyWordSpec with Matchers:
 
@@ -15,7 +17,8 @@ class GameControllerSpec extends AnyWordSpec with Matchers:
     "manage turn" in:
       val players: Vector[Player] = Vector(Player("Alice"), Player("Renee"))
       val controller = GameController(GameState(players), new FixedDice((3,4)))
-      controller.playTurn()
+      controller.rollDice()
+      controller.endTurn()
       val updatedState = controller.getState
       updatedState.currentPlayerIndex shouldBe 1
       updatedState.players(updatedState.currentPlayerIndex - 1).position shouldBe 7
@@ -23,7 +26,8 @@ class GameControllerSpec extends AnyWordSpec with Matchers:
     "manage turn with double" in :
       val players: Vector[Player] = Vector(Player("Alice"), Player("Renee"))
       val controller = GameController(GameState(players), new FixedDice((3, 3)))
-      controller.playTurn()
+      controller.rollDice()
+      controller.endTurn()
       val updatedState = controller.getState
       updatedState.currentPlayerIndex shouldBe 0
       updatedState.players(updatedState.currentPlayerIndex).position shouldBe 6
@@ -31,14 +35,15 @@ class GameControllerSpec extends AnyWordSpec with Matchers:
     "manage turn with START crossing" in :
       val players: Vector[Player] = Vector(Player("Alice", position = 9), Player("Renee"))
       val controller = GameController(GameState(players), new FixedDice((2, 3)))
-      controller.playTurn()
+      controller.rollDice()
+      controller.endTurn()
       val updatedState = controller.getState
       updatedState.players(0).position shouldBe 3
 
 
 
     "be able to buy property" in:
-      val players: Vector[Player] = Vector(Player("Alice", position = 3), Player("Renee"))
+      val players: Vector[Player] = Vector(Player("Alice", position = 3, id=0), Player("Renee", id=1))
       val controller = GameController(GameState(players), new FixedDice((2, 1)))
       controller.buyProperty()
 
@@ -56,7 +61,7 @@ class GameControllerSpec extends AnyWordSpec with Matchers:
       controller.getState shouldBe initialState
 
     "not be able to buy property with an owner" in :
-      val players: Vector[Player] = Vector(Player("Alice", position = 3), Player("Renee"))
+      val players: Vector[Player] = Vector(Player("Alice", position = 3, id = 0), Player("Renee", id = 1))
       val initialState = GameState(players, propertyMap = Map(3 -> 1))
       val controller = GameController(initialState, new FixedDice((2, 1)))
       controller.buyProperty()

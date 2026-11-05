@@ -19,3 +19,4 @@ case class DummyBoard(
 
   def getField(position: Int): DummyField =
     fields(position)
+    

@@ -3,8 +3,6 @@ import controller.GameController
 import model.{GameState, Player, RandomDice}
 import view.ConsoleUI
 
-import scala.io.StdIn
-
 object monopoly:
   def main(args: Array[String]): Unit =
 

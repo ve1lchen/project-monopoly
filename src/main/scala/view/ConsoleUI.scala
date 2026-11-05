@@ -24,17 +24,21 @@ class ConsoleUI(controller: GameController):
         case _ => render()
 
 
-
   def render(): Unit =
     val state = controller.getState
     val currentField = controller.getCurrentField(state.getCurrentPlayer)
+
+    val rollText = state.lastRoll match
+      case Some(id, (a, b)) => s"${state.players(id).name}: $a & $b"
+      case None => "-"
+
     clearScreen()
     println()
     println("======================== MONOPOLY ========================")
     println()
     println(s"Current turn: ${state.getCurrentPlayer.name}")
     println(s"Money: ${state.getCurrentPlayer.money}")
-    println(s"Last rolle: ${state.getCurrentPlayer.name} : ${state.lastRoll._1} & ${state.lastRoll._2}")
+    println(s"Last roll: ${rollText}")
     println()
     println(s"Current field: ${currentField.name}")
     println(s"Cost: ${currentField.cost}")

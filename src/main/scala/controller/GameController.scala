@@ -27,14 +27,16 @@ class GameController(
    */
   def endTurn(): Unit =
     if state.turnPhase == AwaitingAction then
-      state = state.nextTurn(state.lastRoll._1 == state.lastRoll._2)
+      val isDouble = state.lastRoll.exists { case (_, (a, b)) => a == b }
+      state = state.nextTurn(isDouble)
 
 
   def buyProperty(): ResultStatus =
     val player = state.getCurrentPlayer
     val field = state.board.getField(player.position)
+    val fieldId = player.position
 
-    state.propertyMap.get(field) match
+    state.propertyMap.get(fieldId) match
       case Some(ownerId) if ownerId == state.getCurrentPlayer.id => OwnerIsYou
       case Some(_) => AlreadyOwned
       case None if field.fieldType != Business => NotPurchasable
@@ -42,7 +44,7 @@ class GameController(
       case None =>
         val updatedPlayers = state.players.updated(state.currentPlayerIndex, player.pay(field.cost))
         state = state.copy(players = updatedPlayers)
-          .updatePropertyMap(field, player)
+          .updatePropertyMap(fieldId, player.id)
         Success
 
   def getState: GameState =
@@ -52,6 +54,6 @@ class GameController(
     state.board.getField(player.position)
 
   def getCurrentFieldOwner: Option[Player] =
-    val field = getCurrentField(state.getCurrentPlayer)
-    state.propertyMap.get(field).flatMap: id =>
+    val fieldId = state.getCurrentPlayer.position
+    state.propertyMap.get(fieldId).flatMap: id =>
       state.players.find(_.id == id)
