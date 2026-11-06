@@ -1,5 +1,6 @@
 package model
 
 trait Board:
-  val size: Int
-  val fieldsVector: Vector[Field]
+  def size: Int
+  def fields: Vector[Field]
+  def getField(position: Int): Option[Field]
