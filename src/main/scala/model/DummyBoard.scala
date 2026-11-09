@@ -1,22 +1,82 @@
 package model
 
-import model.{DummyField, Field, FieldType}
-
 case class DummyBoard(
-    fields: Vector[DummyField] = Vector(DummyField(0, 0, "Start", FieldType.Start),
-                          DummyField(100, 50, "Field1", FieldType.Business),
-                          DummyField(100, 50, "Field2", FieldType.Business),
-                          DummyField(100, 50, "Field3", FieldType.Business),
-                          DummyField(100, 50, "Field4", FieldType.Business),
-                          DummyField(100, 50, "Field5", FieldType.Business),
-                          DummyField(100, 50, "Field6", FieldType.Business),
-                          DummyField(100, 50, "Field7", FieldType.Business),
-                          DummyField(100, 50, "Field8", FieldType.Business),
-                          DummyField(100, 50, "Field9", FieldType.Business),
-                          DummyField(100, 50, "Field10", FieldType.Business))
+   fields: Vector[Field] = Vector(
+     StandardField("Start", Some(ActionType.Start)),
+     StreetField(
+       price = 100,
+       rentTable = RentStructure(50, 60, 70, 80, 90, 100),
+       houseCost = 50,
+       hotelCost = 50,
+       name = "Field1"
+     ),
+     StreetField(
+       price = 100,
+       rentTable = RentStructure(50, 60, 70, 80, 90, 100),
+       houseCost = 50,
+       hotelCost = 50,
+       name = "Field2"
+     ),
+       StreetField(
+       price = 100,
+       rentTable = RentStructure(50, 60, 70, 80, 90, 100),
+       houseCost = 50,
+       hotelCost = 50,
+       name = "Field3"
+     ),
+     StreetField(
+       price = 100,
+       rentTable = RentStructure(50, 60, 70, 80, 90, 100),
+       houseCost = 50,
+       hotelCost = 50,
+       name = "Field4"
+     ),
+     StreetField(
+       price = 100,
+       rentTable = RentStructure(50, 60, 70, 80, 90, 100),
+       houseCost = 50,
+       hotelCost = 50,
+       name = "Field5"
+     ),
+     StreetField(
+       price = 100,
+       rentTable = RentStructure(50, 60, 70, 80, 90, 100),
+       houseCost = 50,
+       hotelCost = 50,
+       name = "Field6"
+     ),
+     StreetField(
+       price = 100,
+       rentTable = RentStructure(50, 60, 70, 80, 90, 100),
+       houseCost = 50,
+       hotelCost = 50,
+       name = "Field7"
+     ),
+     StreetField(
+       price = 100,
+       rentTable = RentStructure(50, 60, 70, 80, 90, 100),
+       houseCost = 50,
+       hotelCost = 50,
+       name = "Field8"
+     ),
+     StreetField(
+       price = 100,
+       rentTable = RentStructure(50, 60, 70, 80, 90, 100),
+       houseCost = 50,
+       hotelCost = 50,
+       name = "Field9"
+     ),
+     StreetField(
+       price = 100,
+       rentTable = RentStructure(50, 60, 70, 80, 90, 100),
+       houseCost = 50,
+       hotelCost = 50,
+       name = "Field10"
+     ),
+   )
                      ) extends Board:
-  def size: Int = fields.size
 
-  def getField(position: Int): DummyField =
-    fields(position)
-    
+  override def size: Int = fields.size
+
+  override def getField(position: Int): Option[Field] =
+    fields.lift(position)

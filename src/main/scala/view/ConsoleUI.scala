@@ -1,5 +1,6 @@
 package view
 import controller.{GameController, Observer}
+import model.{Field, PropertyField}
 
 import scala.io.StdIn.readLine
 
@@ -32,7 +33,14 @@ class ConsoleUI(controller: GameController) extends Observer:
 
   def render(): Unit =
     val state = controller.getState
-    val currentField = controller.getCurrentField(state.getCurrentPlayer)
+    val currentField = controller.getCurrentField match
+      case Some(property: PropertyField) =>
+        s"Field: ${property.name}\nCost: ${property.price}"
+      case Some(field) =>
+        s"Field: ${field.name}\n"
+      case None =>
+        "Unknown field"
+
 
     val rollText = state.lastRoll match
       case Some(id, (a, b)) => s"${state.players(id).name}: $a & $b"
@@ -46,8 +54,7 @@ class ConsoleUI(controller: GameController) extends Observer:
     println(s"Money: ${state.getCurrentPlayer.money}")
     println(s"Last roll: ${rollText}")
     println()
-    println(s"Current field: ${currentField.name}")
-    println(s"Cost: ${currentField.cost}")
+    println(s"${currentField}")
     println(s"${controller.getCurrentFieldOwner match
       case Some(player) => s"Owner: ${player.name}"
       case None => "Field has no owner"}")
