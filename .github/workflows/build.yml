@@ -32,6 +32,15 @@ jobs:
       - name: Run tests with coverage
         run: sbt clean coverage test coverageReport
 
+      - name: Upload coverage to Coveralls
+        uses: coverallsapp/github-action@v2
+        with:
+          file: target/scala-3.9.0/coverage-report/cobertura.xml
+          format: cobertura
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v8.4.0
         env:
