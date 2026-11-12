@@ -36,12 +36,18 @@ class PlayerSpec extends  AnyWordSpec with Matchers:
     "not lose money for zero payment" in {
       val updated = player.pay(0)
       updated.money shouldBe 1500
-      updated shouldBe player
+      updated should be theSameInstanceAs player
     }
 
     "not receive money for zero receive" in {
       val updated = player.receive(0)
       updated.money shouldBe 1500
-      updated shouldBe player
+      updated should be theSameInstanceAs player
+    }
+
+    "not lose money for negative payment" in {
+      val updated = player.pay(-50)
+      updated.money shouldBe 1500
+      updated should be theSameInstanceAs player
     }
   }
