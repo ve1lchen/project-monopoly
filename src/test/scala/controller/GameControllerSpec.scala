@@ -76,6 +76,64 @@ class GameControllerSpec extends AnyWordSpec with Matchers:
 
       controller.getState shouldBe initialState
 
+    "distinguish own property from another player's property" in :
+      val players = Vector(
+        Player("Alice", position = 3, id = 0),
+        Player("Renee", id = 1)
+      )
+
+      val ownController = GameController(
+        GameState(players, propertyMap = Map(3 -> 0)),
+        new FixedDice((2, 1))
+      )
+
+      ownController.buyProperty() shouldBe model.ResultStatus.OwnerIsYou
+
+      val otherController = GameController(
+        GameState(players, propertyMap = Map(3 -> 1)),
+        new FixedDice((2, 1))
+      )
+
+      otherController.buyProperty() shouldBe model.ResultStatus.AlreadyOwned
+
+      otherController.getCurrentFieldOwner shouldBe Some(players(1))
+
+    "allow buying property with exactly enough money" in :
+      val players = Vector(
+        Player("Alice", money = 100, position = 3, id = 0),
+        Player("Renee", id = 1)
+      )
+
+      val controller = GameController(
+        GameState(players),
+        new FixedDice((2, 1))
+      )
+
+      controller.buyProperty() shouldBe model.ResultStatus.Success
+      controller.getState.players(0).money shouldBe 0
+      controller.getState.propertyMap should contain(3 -> 0)
+
+    "not grant an extra turn when lastRoll is missing" in :
+      val players = Vector(
+        Player("Alice", id = 0),
+        Player("Renee", id = 1)
+      )
+
+      val initialState = GameState(
+        players,
+        lastRoll = None,
+        turnPhase = model.TurnPhase.turnPhases.AwaitingAction
+      )
+
+      val controller = GameController(
+        initialState,
+        new FixedDice((3, 3))
+      )
+
+      controller.endTurn()
+
+      controller.getState.currentPlayerIndex shouldBe 1
+
 
 
 
