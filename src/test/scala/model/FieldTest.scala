@@ -161,6 +161,12 @@ class FieldTest extends AnyWordSpec with Matchers{
     val rent = RentStructure(100, 101, 102, 103, 104, 105)
     "set houseCost=1 and hotelCost=2 " should {
       val street = StreetField(666, rent, 1, 2)
+      
+      "have correct trait hierarchy" in {
+        street shouldBe a[PropertyField]
+        street shouldBe a[RentField[DevelopmentLevel]]
+      }
+      
       "have the same houseCost" in {
         street.houseCost should be(1)
       }
@@ -202,6 +208,11 @@ class FieldTest extends AnyWordSpec with Matchers{
       station.name shouldBe "Station"
       station.rentTable shouldBe Vector(25, 50, 100, 200)
     }
+    
+    "have correct trait hierarchy" in {
+      station shouldBe a[PropertyField]
+      station shouldBe a[RentField]
+    }
 
     "throw an IllegalArgumentException if the rentTable is empty" in {
       an[IllegalArgumentException] should be thrownBy {
@@ -225,22 +236,26 @@ class FieldTest extends AnyWordSpec with Matchers{
   }
 
   "A UtilityField" should {
+    val utility = UtilityField(150)
     "be initialized with default values" in {
-      val utility = UtilityField(150)
+      
       utility.name shouldBe "Utility"
     }
+    
+    "have correct trait hierarchy" in {
+      utility shouldBe a[PropertyField]
+      utility shouldBe a[RentField]
+    }
+    
     "calculate rent correctly when owning only one utility" in {
-      val utility = UtilityField(666)
       // Würfelwurf 7, besitzt nicht beide Werke (Faktor 4) -> 7 * 4 = 28
       utility.getRent(false, 7) shouldBe 28
     }
     "calculate rent correctly when owning both utilities" in {
-      val utility = UtilityField(666)
       // Würfelwurf 7, besitzt beide Werke (Faktor 10) -> 7 * 10 = 70
       utility.getRent(true, 7) shouldBe 70
     }
     "throw an IllegalArgumentException if the dice roll is 0 or negative" in {
-      val utility = UtilityField(666)
       an[IllegalArgumentException] should be thrownBy {
         utility.getRent(false, diceRoll = 0)
       }

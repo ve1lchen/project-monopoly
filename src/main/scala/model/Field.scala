@@ -54,8 +54,10 @@ enum DevelopmentLevel:
 
 
 case class StreetField(price: Int,
-  rentTable: RentStructure, houseCost: Int, hotelCost: Int,
-  name: String = "Street") extends PropertyField, RentField[DevelopmentLevel] {
+  rentTable: RentStructure, houseCost: Int)
+                      (val hotelCost: Int = houseCost,
+                       val name: String = "Street")
+  extends PropertyField, RentField[DevelopmentLevel] {
   require(houseCost > 0 && hotelCost > 0,
     "The house/hotel-cost must be higher than 0.")
   require(houseCost <= hotelCost,
