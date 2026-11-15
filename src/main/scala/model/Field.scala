@@ -7,38 +7,70 @@ sealed trait Field:
   def name: String = "Field"
   require(!name.isBlank, "A field-name cannot be empty.")
 
-sealed trait EventField extends Field:
-  def name: String = "Event"
+/**
+ * A field where something happens.
+ */
+sealed trait EventField(val name: String = "Event") extends Field
 
-case class StartField(name: String = "Start") extends EventField
-case class ChestField(name: String = "Community Chest") extends EventField
-case class ChanceField(name: String = "Chance") extends EventField
-case class GoToJailField(name: String = "Go To Jail") extends EventField
+sealed trait OnEnterField(val name: String = "Enter-Event") extends EventField
+sealed trait OnPassField(val name: String = "Pass-Event") extends EventField
 
-// A field which gives/takes a constant number of money.
-sealed trait MoneyField extends EventField:
-  def money: Int
+case class ChestField(name: String = "Community Chest") extends OnEnterField
+case class ChanceField(name: String = "Chance") extends OnEnterField
+case class GoToJailField(name: String = "Go To Jail") extends OnEnterField
 
-case class TaxField(money: Int, override val name: String = "Tax")
-  extends MoneyField:
-  require(money > 0, "Tax must be higher than 0")
+/**
+ * A field which gives/takes a (constant) number of money.
+ */
+sealed trait MoneyField[C](val name: String = "Money") extends EventField:
+  def money(context: C): Option[Int]
+
+sealed trait GainMoneyField(val name: String = "Gain Money") extends MoneyField[Unit]:
+  def amount: Int
+  final override def money(context: Unit): Option[Int] = Some(amount)
+  require(amount > 0, "Money gained must be more than 0.")
+  
+sealed trait LoseMoneyField(val name: String = "Lose Money") extends MoneyField[Unit]:
+  def amount: Int
+  final override def money(context: Unit): Option[Int] = Some(-amount)
+  require(amount > 0, "Money lost must be more than 0.")
+
+case class StartField(amount: Int, override val name: String = "Start")
+  extends OnPassField, GainMoneyField
+
+case class TaxField(amount: Int, override val name: String = "Tax")
+  extends OnEnterField, LoseMoneyField
 
 
-sealed trait EventlessField extends Field
+/**
+ * A field where nothing happens.
+ */
+sealed trait EventlessField(val name: String = "Normal Field") extends Field
 
 case class JailField(name: String = "Jail") extends EventlessField
 case class FreeParkingField(name: String = "Free Parking") extends EventlessField
 
+/**
+ * A field where the player can do something.
+ */
+sealed trait ActionField(val name: String = "Action") extends Field
 
-sealed trait PropertyField extends Field:
+/**
+ * A field which the player can buy.
+ */
+sealed trait PropertyField(val name: String = "Property") extends ActionField:
   def price: Int
   require(price >= 0, "The price needs to be at least 0.")
 
-sealed trait RentField[C] extends Field:
-  def getRent(context: C): Int
+/**
+ * A field where a player needs to pay rent.
+ * @tparam C The context required.
+ */
+sealed trait RentField[C](val name: String = "Rent") extends MoneyField[C]:
+  protected def calculateRent(context: C): Option[Int]
+  final override def money(context: C): Option[Int] = calculateRent(context).map(-_)
 
-case class RentStructure(
-  baseRent: Int,
+case class RentStructure(baseRent: Int,
   oneHouse: Int, twoHouses: Int, threeHouses: Int, fourHouses: Int,
   hotel: Int) {
 
@@ -63,14 +95,14 @@ case class StreetField(price: Int,
   require(houseCost <= hotelCost,
     "A hotel should cost the same or more than a house")
 
-  def getRent(developmentLevel: DevelopmentLevel): Int =
-    developmentLevel match
+  protected def calculateRent(developmentLevel: DevelopmentLevel): Option[Int] =
+    Some(developmentLevel match
       case Undeveloped  => rentTable.baseRent
       case OneHouse     => rentTable.oneHouse
       case TwoHouses    => rentTable.twoHouses
       case ThreeHouses  => rentTable.threeHouses
       case FourHouses   => rentTable.fourHouses
-      case Hotel        => rentTable.hotel}
+      case Hotel        => rentTable.hotel)}
 
 
 case class StationField(price: Int,
@@ -82,15 +114,19 @@ case class StationField(price: Int,
    * @param ownedStationsCount the total amount of stations this player owns
    * @return the rent or None
    */
-  def getRent(ownedStationsCount: Int): Option[Int] =
+  protected def calculateRent(ownedStationsCount: Int): Option[Int] =
     rentTable.lift(ownedStationsCount - 1)}
 
 
 case class UtilityField(price: Int, name: String = "Utility",
-                        both: Int = 10, one: Int = 4)
-  extends PropertyField, RentField[(Boolean, Int)] {
-  def getRent(ownsBothUtilities: Boolean, diceRoll: Int): Int = {
+                        rentTable: Vector[Int] = Vector(4, 10))
+  extends PropertyField, RentField[(Int, Int)] {
+  
+  def calculateRent(context: (Int, Int)): Option[Int] = {
+    val (ownedUtilitiesCount, diceRoll) = context
+    
     require(diceRoll > 0, "The dice-roll must be higher than 0.")
-    diceRoll * (if ownsBothUtilities then both else one)
+    
+    Option(rentTable(ownedUtilitiesCount - 1) * diceRoll)
   }
 }
