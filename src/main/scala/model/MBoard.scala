@@ -1,6 +1,5 @@
 package model
 
-import model.ActionType.*
 
 case class MBoard(fields: Vector[Field]) extends Board:
   override val size: Int = fields.size
