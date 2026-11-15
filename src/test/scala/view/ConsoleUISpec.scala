@@ -13,7 +13,7 @@ import java.nio.charset.StandardCharsets.UTF_8
 class ConsoleUISpec extends AnyWordSpec with Matchers:
 
   private def newState(): GameState =
-    GameState(Vector(Player("Alice", id = 0), Player("Bob", id = 1)))
+    GameState(Vector(Player("Alice", id = 0), Player("Renee", id = 1)))
 
   /*
   Feeds the given lines to the UI as stdin and returns the controller (to check
@@ -48,9 +48,32 @@ class ConsoleUISpec extends AnyWordSpec with Matchers:
       .toLowerCase
 
   "ConsoleUI" should:
+    
+    "display the ui" in:
+      val (_, text) = runUi("0\n")
+
+      text should include ("monopoly")
+      text should include (">>")
+      text should include ("field has no owner")
+
+    "clear the screen before displaying the ui" in:
+      val controller = GameController(newState(), new FixedDice((2, 3)))
+      val ui = ConsoleUI(controller)
+      val input = new ByteArrayInputStream("0\n".getBytes(UTF_8))
+      val output = new ByteArrayOutputStream()
+      val printer = new PrintStream(output, true, UTF_8)
+
+      scala.Console.withIn(input) {
+        scala.Console.withOut(printer) {
+          ui.run()
+        }
+      }
+
+      output.toString(UTF_8) should include ("\u001b[H\u001b[2J\u001b[3J")
+
     "show results when the user exits" in:
       val controller = GameController(
-        GameState(Vector(Player("Alice"), Player("Bob"))),
+        GameState(Vector(Player("Alice"), Player("Renee"))),
         new FixedDice((2, 3))
       )
       val ui = ConsoleUI(controller)
@@ -67,12 +90,12 @@ class ConsoleUISpec extends AnyWordSpec with Matchers:
       val text = output.toString(UTF_8)
       text should include ("RESULTS")
       text should include ("Alice")
-      text should include ("Bob")
+      text should include ("Renee")
 
     "print the names of all players when the user exits" in:
       val (_, text) = runUi("0\n")
       text should include ("alice")
-      text should include ("bob")
+      text should include ("renee")
 
     "show the current player and his money on the first screen" in:
       val (controller, text) = runUi("0\n")
@@ -128,8 +151,9 @@ class ConsoleUISpec extends AnyWordSpec with Matchers:
       controller.getState.turnPhase shouldBe AwaitingRoll
 
     "remember who rolled after the turn ends" in:
-      val (controller, _) = runUi("1\n3\n0\n")
+      val (controller, text) = runUi("1\n3\n0\n")
       controller.getState.lastRoll shouldBe Some((0, (2, 3)))
+      text should include ("last roll: alice")
 
     "keep the same player after a double" in:
       val (controller, _) = runUi("1\n3\n0\n", dice = (3, 3))
@@ -145,9 +169,30 @@ class ConsoleUISpec extends AnyWordSpec with Matchers:
       val (controller, text) = runUi("abc\n9\n\n0\n")
       controller.getState shouldBe newState()
       text should include ("alice")
-      text should include ("bob")
+      text should include ("renee")
 
     "show the money of every player in the results" in:
       val (_, text) = runUi("1\n2\n3\n0\n")
       text should include ("1400")
       text should include ("1500")
+
+    "show input invitation" in:
+      val (_, text) = runUi("0\n")
+      text should include(">>")
+
+
+    "show - if no one rolled yet" in :
+      val (_, text) = runUi("0\n")
+      text should include("last roll: -")
+
+    "show properties in result screen" in :
+      val (_, text) = runUi("1\n2\n3\n1\n3\n1\n2\n3\n0\n")
+      text should include("5, 10")
+      text should include("alice || 1300 || properties: 5, 10")
+      text should include("renee || 1500 || properties:")
+      text should not include ("1, 2, 3")
+      text should include("------")
+
+    "show field owner" in :
+      val (_, text) = runUi("1\n2\n0\n")
+      text should include("owner:")
