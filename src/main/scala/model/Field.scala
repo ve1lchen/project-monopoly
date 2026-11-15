@@ -15,9 +15,9 @@ sealed trait EventField(val name: String = "Event") extends Field
 sealed trait OnEnterField(val name: String = "Enter-Event") extends EventField
 sealed trait OnPassField(val name: String = "Pass-Event") extends EventField
 
-case class ChestField(name: String = "Community Chest") extends OnEnterField
-case class ChanceField(name: String = "Chance") extends OnEnterField
-case class GoToJailField(name: String = "Go To Jail") extends OnEnterField
+case object ChestField extends OnEnterField("Community Chest")
+case object ChanceField extends OnEnterField("Chance")
+case object GoToJailField extends OnEnterField("Go To Jail")
 
 /**
  * A field which gives/takes a (constant) number of money.
@@ -47,8 +47,8 @@ case class TaxField(amount: Int, override val name: String = "Tax")
  */
 sealed trait EventlessField(val name: String = "Normal Field") extends Field
 
-case class JailField(name: String = "Jail") extends EventlessField
-case class FreeParkingField(name: String = "Free Parking") extends EventlessField
+case object JailField extends EventlessField("Jail")
+case object FreeParkingField extends EventlessField("Free Parking")
 
 /**
  * A field where the player can do something.
@@ -86,10 +86,8 @@ enum DevelopmentLevel:
 
 
 case class StreetField(price: Int,
-  rentTable: RentStructure, houseCost: Int)
-                      (val hotelCost: Int = houseCost,
-                       val name: String = "Street")
-  extends PropertyField, RentField[DevelopmentLevel] {
+  rentTable: RentStructure, houseCost: Int, name: String = "Street", hotelCost: Int)
+  extends PropertyField, RentField[DevelopmentLevel]:
   require(houseCost > 0 && hotelCost > 0,
     "The house/hotel-cost must be higher than 0.")
   require(houseCost <= hotelCost,
@@ -102,25 +100,30 @@ case class StreetField(price: Int,
       case TwoHouses    => rentTable.twoHouses
       case ThreeHouses  => rentTable.threeHouses
       case FourHouses   => rentTable.fourHouses
-      case Hotel        => rentTable.hotel)}
+      case Hotel        => rentTable.hotel)
+
+object StreetField:
+  def apply(price: Int, rentTable: RentStructure,
+            houseCost: Int, name: String): StreetField =
+    new StreetField(price, rentTable, houseCost, name, houseCost)
 
 
-case class StationField(price: Int,
+case class StationField(price: Int, name: String = "Station",
   // The rent depending on the amount of stations the player owns.
-  rentTable: Vector[Int] = Vector(25, 50, 100, 200),
-  name: String = "Station") extends PropertyField, RentField[Int] {
+  rentTable: Vector[Int] = Vector(25, 50, 100, 200)
+                       ) extends PropertyField, RentField[Int]:
   require(rentTable.nonEmpty, "The rentTable cannot be empty.")
   /**
    * @param ownedStationsCount the total amount of stations this player owns
    * @return the rent or None
    */
   protected def calculateRent(ownedStationsCount: Int): Option[Int] =
-    rentTable.lift(ownedStationsCount - 1)}
+    rentTable.lift(ownedStationsCount - 1)
 
 
 case class UtilityField(price: Int, name: String = "Utility",
                         rentTable: Vector[Int] = Vector(4, 10))
-  extends PropertyField, RentField[(Int, Int)] {
+  extends PropertyField, RentField[(Int, Int)]:
   
   def calculateRent(context: (Int, Int)): Option[Int] = {
     val (ownedUtilitiesCount, diceRoll) = context
@@ -129,4 +132,3 @@ case class UtilityField(price: Int, name: String = "Utility",
     
     Option(rentTable(ownedUtilitiesCount - 1) * diceRoll)
   }
-}
