@@ -1,8 +1,8 @@
 package view
 import controller.{GameController, Observer}
+import model.Player
 
 import scala.io.StdIn.readLine
-
 
 class ConsoleUI(controller: GameController) extends Observer:
 

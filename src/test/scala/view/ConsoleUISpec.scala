@@ -48,7 +48,7 @@ class ConsoleUISpec extends AnyWordSpec with Matchers:
       .toLowerCase
 
   "ConsoleUI" should:
-    
+
     "display the ui" in:
       val (_, text) = runUi("0\n")
 
