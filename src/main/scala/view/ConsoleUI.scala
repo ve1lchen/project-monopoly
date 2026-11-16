@@ -4,25 +4,6 @@ import model.Player
 
 import scala.io.StdIn.readLine
 
-object ConsoleSetup:
-  def askPlayers: Vector[Player] =
-    var valid = false
-    var players: Vector[Player] = Vector.empty
-
-    while !valid do
-      val count = readLine("Enter players count: ").toIntOption
-      count match
-        case Some(count) =>
-          if count >= 2 && count <= 4 then
-            valid = true
-
-            for (i <- 0 until count) do
-              val name = readLine(s"Enter Player ${i+1} name: ")
-              players = players :+ Player(name = name, id = i)
-        case _ =>
-          println("Enter players count from 2 to 4.")
-    players
-
 class ConsoleUI(controller: GameController) extends Observer:
 
   controller.addObserver(this)
