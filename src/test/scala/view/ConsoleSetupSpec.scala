@@ -8,7 +8,7 @@ import org.scalatest.wordspec.AnyWordSpec
 
 class ConsoleSetupSpec extends AnyWordSpec with Matchers:
   private def runSetup(input: String): (Vector[Player], String) =
-    val in = new ByteArrayInputStream(input.getBytes(UTF_8))
+    val in  = new ByteArrayInputStream(input.getBytes(UTF_8))
     val out = new ByteArrayOutputStream()
 
     val players = scala.Console.withIn(in) {
@@ -46,7 +46,7 @@ class ConsoleSetupSpec extends AnyWordSpec with Matchers:
         players.map(_.name) shouldBe Vector("Alice", "Renee")
         output should include("Enter players count from 2 to 4.")
 
-    "show an error and ask again when a name is empty" in :
+    "show an error and ask again when a name is empty" in:
       val (players, output) = runSetup("2\n\nRenee\n2\nAlice\nRenee\n")
 
       output should include("Player names must not be empty.")

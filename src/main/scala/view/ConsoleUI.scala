@@ -23,20 +23,18 @@ class ConsoleUI(controller: GameController) extends Observer:
         case "1" => controller.rollDice()
         case "2" => controller.buyProperty()
         case "3" => controller.endTurn()
-        case "0" => {
+        case "0" =>
           running = false
           exitResults()
-        }
         case _ => render()
 
-
   def render(): Unit =
-    val state = controller.getState
+    val state        = controller.getState
     val currentField = controller.getCurrentField(state.getCurrentPlayer)
 
     val rollText = state.lastRoll match
       case Some(id, (a, b)) => s"${state.players(id).name}: $a & $b"
-      case None => "-"
+      case None             => "-"
 
     val field =
       s"""
@@ -50,7 +48,8 @@ class ConsoleUI(controller: GameController) extends Observer:
          |Cost: ${currentField.cost}
          |${controller.getCurrentFieldOwner match
           case Some(player) => s"Owner: ${player.name}"
-          case None => "Field has no owner"}
+          case None         => "Field has no owner"
+        }
          |
          |[1] Roll
          |[2] Buy
@@ -71,11 +70,10 @@ class ConsoleUI(controller: GameController) extends Observer:
 
     clearScreen()
     println("============= RESULTS ============")
-    for (player <- state.players) {
+    for player <- state.players do
       println(s" ${player.name} || ${player.money} ||")
       val property = state.propertyMap.collect {
         case (field, ownerId) if ownerId == player.id => field
       }
       println(s"   Properties: ${property.mkString(", ")}")
       println("-------------------------------------")
-    }
