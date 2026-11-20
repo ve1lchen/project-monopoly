@@ -1,5 +1,10 @@
 # Monopoly
 
+[![Build](https://github.com/ve1lchen/project-monopoly/actions/workflows/build.yml/badge.svg)](https://github.com/ve1lchen/project-monopoly/actions/workflows/build.yml)
+[![Mutation Testing](https://github.com/ve1lchen/project-monopoly/actions/workflows/mutation-testing.yml/badge.svg)](https://github.com/ve1lchen/project-monopoly/actions/workflows/mutation-testing.yml)
+[![Coverage Status](https://coveralls.io/repos/github/ve1lchen/project-monopoly/badge.svg?branch=main)](https://coveralls.io/github/ve1lchen/project-monopoly?branch=main)
+
+
 A university Software Engineering project implementing Monopoly in Scala 3.
 The current prototype uses a console interface; a GUI is planned.
 

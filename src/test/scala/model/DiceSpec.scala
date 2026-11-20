@@ -23,4 +23,34 @@ class DiceSpec extends AnyWordSpec with Matchers:
       val result = dice.roll()
       result._1 shouldBe 3
       result._2 shouldBe 4
-      
+
+    "reject invalid dice values" in :
+      val dice = new FixedDice((3, 4))
+
+      val invalidRolls = Seq(
+        (0, 3),
+        (7, 3),
+        (3, 0),
+        (3, 7)
+      )
+
+      for invalid <- invalidRolls do
+        intercept[IllegalArgumentException] {
+          dice.setValues(invalid)
+        }
+
+        dice.roll() shouldBe(3, 4)
+
+    "accept boundary values for both dice" in :
+      val dice = new FixedDice((3, 4))
+
+      val validRolls = Seq(
+        (1, 3),
+        (6, 3),
+        (3, 1),
+        (3, 6)
+      )
+
+      for values <- validRolls do
+        dice.setValues(values)
+        dice.roll() shouldBe values
