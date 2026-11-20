@@ -1,7 +1,6 @@
 package controller
 
 import model.ResultStatus.{AlreadyOwned, InsufficientFunds, NotPurchasable, OwnerIsYou, Success}
-import model.FieldType.Business
 import model.TurnPhase.turnPhases.{AwaitingAction, AwaitingRoll}
 import model.{Board, Dice, Field, GameState, Player, PropertyField, ResultStatus}
 
@@ -45,7 +44,7 @@ class GameController(
     val fieldId = player.position
 
     getCurrentField match
-      case Some(property: PropertyField) =>
+      case property: PropertyField =>
         state.propertyMap.get(fieldId) match
           case Some(_) =>
             AlreadyOwned
@@ -69,9 +68,9 @@ class GameController(
   def getState: GameState =
     state
 
-  def getCurrentField: Option[Field] =
+  def getCurrentField: Field =
     val player = state.getCurrentPlayer
-    state.board.getField(player.position)
+    state.board.get(player.position)
 
   def getCurrentFieldOwner: Option[Player] =
     val fieldId = state.getCurrentPlayer.position

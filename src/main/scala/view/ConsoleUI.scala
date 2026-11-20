@@ -1,6 +1,6 @@
 package view
 import controller.{GameController, Observer}
-import model.{Field, PropertyField}
+import model.PropertyField
 
 import scala.io.StdIn.readLine
 
@@ -24,22 +24,19 @@ class ConsoleUI(controller: GameController) extends Observer:
         case "1" => controller.rollDice()
         case "2" => controller.buyProperty()
         case "3" => controller.endTurn()
-        case "0" => {
+        case "0" =>
           running = false
           exitResults()
-        }
         case _ => render()
 
 
-  def render(): Unit =
+  private def render(): Unit =
     val state = controller.getState
     val currentField = controller.getCurrentField match
-      case Some(property: PropertyField) =>
+      case property: PropertyField =>
         s"Field: ${property.name}\nCost: ${property.price}"
-      case Some(field) =>
+      case field =>
         s"Field: ${field.name}\n"
-      case None =>
-        "Unknown field"
 
 
     val rollText = state.lastRoll match
@@ -52,9 +49,9 @@ class ConsoleUI(controller: GameController) extends Observer:
     println()
     println(s"Current turn: ${state.getCurrentPlayer.name}")
     println(s"Money: ${state.getCurrentPlayer.money}")
-    println(s"Last roll: ${rollText}")
+    println(s"Last roll: $rollText")
     println()
-    println(s"${currentField}")
+    println(s"$currentField")
     println(s"${controller.getCurrentFieldOwner match
       case Some(player) => s"Owner: ${player.name}"
       case None => "Field has no owner"}")
