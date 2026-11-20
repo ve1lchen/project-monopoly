@@ -13,9 +13,5 @@ class FixedDice(initValues: (Int, Int)) extends Dice:
 
     values = newValues
 
-
   def roll(): (Int, Int) =
     values
-    
-   
-  

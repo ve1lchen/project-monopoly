@@ -6,4 +6,3 @@ enum ResultStatus:
   case OwnerIsYou
   case AlreadyOwned
   case InsufficientFunds
-

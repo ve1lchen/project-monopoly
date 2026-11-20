@@ -1,12 +1,12 @@
-
 import controller.GameController
 import model.{GameState, Player, RandomDice}
-import view.ConsoleUI
+import view.{ConsoleSetup, ConsoleUI}
 
 object monopoly:
   def main(args: Array[String]): Unit =
 
-    val players = Vector(Player("Alice", id = 0), Player("Renee", id = 1))
-    val controller = GameController(GameState(players = players), new RandomDice)
+    val players    = ConsoleSetup.askPlayers
+    val controller =
+      GameController(GameState(players = players), new RandomDice)
     val ui = ConsoleUI(controller)
     ui.run()

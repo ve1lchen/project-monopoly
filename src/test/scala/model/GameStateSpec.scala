@@ -28,20 +28,17 @@ class GameStateSpec extends AnyWordSpec with Matchers:
 
     "wrap around to the first player" in:
       val lastState = state.copy(currentPlayerIndex = 2)
-      val updated = lastState.nextTurn(false)
+      val updated   = lastState.nextTurn(false)
       updated.currentPlayerIndex shouldBe 0
 
     "move the current player" in:
-      val updated = state.movePlayer((4,4))
+      val updated = state.movePlayer((4, 4))
       updated.players(0).position shouldBe 8
 
     "check if the game is over" in:
-      val bankruptedPlayers = Vector(Player("Alice", isBankrupt = true), Player("Bob"))
-      val stateBankrupts = GameState(players = bankruptedPlayers, propertyMap = Map.empty)
+      val bankruptedPlayers =
+        Vector(Player("Alice", isBankrupt = true), Player("Bob"))
+      val stateBankrupts =
+        GameState(players = bankruptedPlayers, propertyMap = Map.empty)
       val updated = stateBankrupts.checkGameOver
       updated.isGameOver shouldBe true
-
-
-
-
-
