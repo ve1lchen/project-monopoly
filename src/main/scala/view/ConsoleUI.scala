@@ -1,6 +1,6 @@
 package view
 import controller.{GameController, Observer}
-import model.Player
+import controller.command.*
 
 import scala.io.StdIn.readLine
 
@@ -11,6 +11,25 @@ class ConsoleUI(controller: GameController) extends Observer:
   override def update(): Unit =
     render()
 
+  private def exitResults(): Unit =
+    val state = controller.getState
+
+    clearScreen()
+    println("============= RESULTS ============")
+    for player <- state.players do
+      println(s" ${player.name} || ${player.money} ||")
+      val property = state.propertyMap.collect {
+        case (field, ownerId) if ownerId == player.id => field
+      }
+      println(s"   Properties: ${property.mkString(", ")}")
+      println("-------------------------------------")
+
+  private val commands: Map[String, GameCommand] = Map(
+    "1" -> RollDiceCommand(controller),
+    "2" -> BuyPropertyCommand(controller),
+    "3" -> EndTurnCommand(controller)
+  )
+
   def run(): Unit =
     var running = true
     render()
@@ -20,13 +39,13 @@ class ConsoleUI(controller: GameController) extends Observer:
       val input = readLine(">> ")
 
       input match
-        case "1" => controller.rollDice()
-        case "2" => controller.buyProperty()
-        case "3" => controller.endTurn()
         case "0" =>
           running = false
           exitResults()
-        case _ => render()
+        case _ =>
+          commands.get(input) match
+          case Some(command) => command.execute()
+          case None          => render()
 
   def render(): Unit =
     val state        = controller.getState
@@ -65,15 +84,3 @@ class ConsoleUI(controller: GameController) extends Observer:
     print("\u001b[H\u001b[2J\u001b[3J")
     Console.flush()
 
-  private def exitResults(): Unit =
-    val state = controller.getState
-
-    clearScreen()
-    println("============= RESULTS ============")
-    for player <- state.players do
-      println(s" ${player.name} || ${player.money} ||")
-      val property = state.propertyMap.collect {
-        case (field, ownerId) if ownerId == player.id => field
-      }
-      println(s"   Properties: ${property.mkString(", ")}")
-      println("-------------------------------------")
