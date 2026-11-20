@@ -44,8 +44,8 @@ class ConsoleUI(controller: GameController) extends Observer:
           exitResults()
         case _ =>
           commands.get(input) match
-          case Some(command) => command.execute()
-          case None          => render()
+            case Some(command) => command.execute()
+            case None          => render()
 
   def render(): Unit =
     val state        = controller.getState
@@ -83,4 +83,3 @@ class ConsoleUI(controller: GameController) extends Observer:
   private def clearScreen(): Unit =
     print("\u001b[H\u001b[2J\u001b[3J")
     Console.flush()
-

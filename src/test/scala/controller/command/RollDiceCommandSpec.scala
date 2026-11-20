@@ -9,12 +9,12 @@ class RollDiceCommandSpec extends AnyWordSpec with Matchers:
 
   "RollDiceCommand" should:
     "execute a dice roll through the controller" in:
-      val dice = new FixedDice((2, 3))
+      val dice  = new FixedDice((2, 3))
       val state = GameState(
-        players = Vector(Player("Alice", id=0), Player("Renee", id=1))
+        players = Vector(Player("Alice", id = 0), Player("Renee", id = 1))
       )
       val controller = GameController(state, dice)
-      val command = RollDiceCommand(controller)
+      val command    = RollDiceCommand(controller)
 
       command.execute()
 

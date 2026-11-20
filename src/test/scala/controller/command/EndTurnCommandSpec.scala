@@ -14,7 +14,7 @@ class EndTurnCommandSpec extends AnyWordSpec with Matchers:
         turnState = AwaitingActionState
       )
       val controller = GameController(state, new FixedDice((2, 3)))
-      val command = EndTurnCommand(controller)
+      val command    = EndTurnCommand(controller)
 
       command.execute()
 

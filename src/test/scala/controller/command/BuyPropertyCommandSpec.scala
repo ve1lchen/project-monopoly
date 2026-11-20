@@ -13,7 +13,7 @@ class BuyPropertyCommandSpec extends AnyWordSpec with Matchers:
         players = Vector(Player("Alice"), Player("Bob"))
       )
       val controller = GameController(state, new FixedDice((2, 3)))
-      val command = BuyPropertyCommand(controller)
+      val command    = BuyPropertyCommand(controller)
 
       command.execute()
 
