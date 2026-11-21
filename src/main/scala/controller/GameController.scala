@@ -7,10 +7,10 @@ import model.{Board, Dice, Field, GameState, Player, PropertyField, ResultStatus
 class GameController(
     initialState: GameState,
     dice: Dice
-                    ):
+):
 
-  private var state: GameState = initialState
-  private val board: Board = state.board
+  private var state: GameState            = initialState
+  private val board: Board                = state.board
   private var observers: Vector[Observer] = Vector.empty
 
   def addObserver(observer: Observer): Unit =
@@ -23,57 +23,52 @@ class GameController(
   Rolls dices -> saves the travel -> processes the field
    */
   def rollDice(): Unit =
-    if state.turnPhase == AwaitingRoll then
-      val rolled = dice.roll()
-      state = state.movePlayer(rolled)
-      notifyObservers()
-
+    state.turnState
+      .roll(state, dice)
+      .foreach: updatedState =>
+        state = updatedState
+        notifyObservers()
 
   /*
   Ends Turn only after roll
    */
   def endTurn(): Unit =
-    if state.turnPhase == AwaitingAction then
-      val isDouble = state.lastRoll.exists { case (_, (a, b)) => a == b }
-      state = state.nextTurn(isDouble)
-      notifyObservers()
-
+    state.turnState
+      .endTurn(state)
+      .foreach: updatedState =>
+        state = updatedState
+        notifyObservers()
 
   def buyProperty(): ResultStatus =
-    val player = state.getCurrentPlayer
+    val player  = state.getCurrentPlayer
+    val field   = state.board.getField(player.position)
     val fieldId = player.position
 
-    getCurrentField match
-      case property: PropertyField =>
-        state.propertyMap.get(fieldId) match
-          case Some(ownerId) =>
-            if ownerId == player.id then OwnerIsYou
-            else AlreadyOwned
-          case None if player.money < property.price =>
-            InsufficientFunds
-          case None =>
-            val updatedPlayers = state.players.updated(
-              state.currentPlayerIndex,
-              player.pay(property.price)
-            )
-            state = state.copy(
-              players=updatedPlayers,
-              propertyMap = state.propertyMap.updated(fieldId, player.id)
-            )
-            notifyObservers()
-            Success
-      case _ =>
-        NotPurchasable
-
+    state.propertyMap.get(fieldId) match
+      case Some(ownerId) if ownerId == state.getCurrentPlayer.id => OwnerIsYou
+      case Some(_)                                               => AlreadyOwned
+      case None if !field.isInstanceOf[PropertyField]            => NotPurchasable
+      case None if player.money < field.price => InsufficientFunds
+      case None                                =>
+        val updatedPlayers = state.players.updated(
+          state.currentPlayerIndex,
+          player.pay(field.price)
+        )
+        state = state
+          .copy(players = updatedPlayers)
+          .updatePropertyMap(fieldId, player.id)
+        notifyObservers()
+        Success
 
   def getState: GameState =
     state
 
-  def getCurrentField: Field =
-    val player = state.getCurrentPlayer
-    state.board.get(player.position)
+  def getCurrentField(player: Player): Field =
+    state.board.getField(player.position)
 
   def getCurrentFieldOwner: Option[Player] =
     val fieldId = state.getCurrentPlayer.position
-    state.propertyMap.get(fieldId).flatMap: id =>
-      state.players.find(_.id == id)
+    state.propertyMap
+      .get(fieldId)
+      .flatMap: id =>
+        state.players.find(_.id == id)

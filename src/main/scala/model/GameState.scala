@@ -1,14 +1,5 @@
 package model
 
-import model.TurnPhase.turnPhases.{AwaitingAction, AwaitingRoll}
-
-/*
-Companion object
- */
-object TurnPhase:
-  enum turnPhases:
-    case AwaitingRoll, AwaitingAction
-
 case class GameState(
     players: Vector[Player],
     currentPlayerIndex: Int = 0,
@@ -16,7 +7,7 @@ case class GameState(
     propertyMap: Map[Int, Int] = Map.empty, // FieldId: PlayerID
     board: Board = StandardBoard,
     lastRoll: Option[(Int, (Int, Int))] = None, // PlayerID, rolled
-    turnPhase: TurnPhase.turnPhases = AwaitingRoll
+    turnState: TurnState = AwaitingRollState
 ):
 
   /*
@@ -28,15 +19,15 @@ case class GameState(
     copy(isGameOver = notBankrupts == 1)
 
   /*
-  Changes to the next Player and changes turnPhase = AwaitingRoll
+  Changes to the next Player and changes turnState = AwaitingRollState
    */
   def nextTurn(isDouble: Boolean): GameState =
     val nextIndex = if isDouble then currentPlayerIndex
     else (currentPlayerIndex + 1) % players.length
-    copy(currentPlayerIndex = nextIndex, turnPhase = AwaitingRoll)
+    copy(currentPlayerIndex = nextIndex, turnState = AwaitingRollState)
 
   /*
-  Changes player`s position and sets turnPhase = AwaitingAction
+  Changes player`s position and sets turnState = AwaitingActionState
    */
   def movePlayer(rolled: (Int, Int)): GameState =
     val newPosition = board.relativePosition(players(currentPlayerIndex)
@@ -45,9 +36,11 @@ case class GameState(
       currentPlayerIndex,
       players(currentPlayerIndex).changePosition(newPosition)
     )
-    copy(players = updatedPlayers,
+    copy(
+      players = updatedPlayers,
       lastRoll = Some(currentPlayerIndex, (rolled._1, rolled._2)),
-      turnPhase = AwaitingAction)
+      turnState = AwaitingActionState
+    )
 
   /*
   Adds new field:player relation to the map

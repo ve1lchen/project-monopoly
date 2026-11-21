@@ -13,18 +13,18 @@ class DiceSpec extends AnyWordSpec with Matchers:
     
   "A FixedDice" should:
     "return 5 and 5" in:
-      val result = FixedDice((5,5)).roll()
+      val result = FixedDice((5, 5)).roll()
       result._1 shouldBe 5
       result._2 shouldBe 5
 
     "set and roll new values" in:
       val dice = new FixedDice((1, 2))
-      dice.setValues((3,4))
+      dice.setValues((3, 4))
       val result = dice.roll()
       result._1 shouldBe 3
       result._2 shouldBe 4
 
-    "reject invalid dice values" in :
+    "reject invalid dice values" in:
       val dice = new FixedDice((3, 4))
 
       val invalidRolls = Seq(
@@ -39,9 +39,9 @@ class DiceSpec extends AnyWordSpec with Matchers:
           dice.setValues(invalid)
         }
 
-        dice.roll() shouldBe(3, 4)
+        dice.roll() shouldBe (3, 4)
 
-    "accept boundary values for both dice" in :
+    "accept boundary values for both dice" in:
       val dice = new FixedDice((3, 4))
 
       val validRolls = Seq(
