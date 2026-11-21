@@ -6,6 +6,51 @@ import org.scalatest.matchers.should.Matchers
 
 class FieldSpec extends AnyWordSpec with Matchers:
 
+  "A normal field" should:
+    "have the default name Field" in:
+      new Field {}.name shouldBe "Field"
+
+  "A EventField" should:
+    "have the default name Event" in:
+      new EventField {}.name shouldBe "Event"
+
+  "A OnEnterField" should:
+    "have the default name Enter-Event" in:
+      new OnEnterField {}.name shouldBe "Enter-Event"
+
+  "A OnPassField" should :
+    "have the default name Pass-Event" in:
+      new OnPassField {}.name shouldBe "Pass-Event"
+
+  "A MoneyField" should :
+    "have the default name Money" in:
+      new MoneyField[Unit]:
+        def money(context: Unit): Option[Int] = None
+      .name shouldBe "Money"
+
+  "A GainMoneyField" should:
+    "have the default name Gain Money" in:
+      new GainMoneyField:
+        override def amount: Int = 1
+      .name shouldBe "Gain Money"
+
+  "A LoseMoneyField" should:
+    "have the default name Lose Money" in:
+      new LoseMoneyField:
+        override def amount: Int = 1
+      .name shouldBe "Gain Money"
+
+  "A ActionField" should:
+    "have the default name Action" in:
+      new ActionField {}.name shouldBe "Action"
+
+  "A RentField" should:
+    "have the default name Rent" in:
+      new RentField[Unit]:
+        protected def calculateRent(context: Unit): Option[Int] = None
+      .name shouldBe "Rent"
+
+
   "Field validation" should:
     "throw an IllegalArgumentException when any field has an empty or blank name" in:
       val blankNames = Seq("", "   ", "\t\n")
@@ -59,7 +104,7 @@ class FieldSpec extends AnyWordSpec with Matchers:
       luxuryTax.amount shouldBe 75
       luxuryTax.name shouldBe "Luxury Tax"
   
-    "throw an IllegalArgumentException when money is 0 or negative" in:
+    "throw an IllegalArgumentException when amount is 0 or negative" in:
       val message = "Money lost must be more than 0."
       val zeroException = intercept[IllegalArgumentException]:
         TaxField(0)
@@ -67,6 +112,17 @@ class FieldSpec extends AnyWordSpec with Matchers:
   
       val negativeException = intercept[IllegalArgumentException]:
         TaxField(-50)
+      negativeException.getMessage should include(message)
+
+  "StartField" should:
+    "throw an IllegalArgumentException when amount is 0 or negative" in:
+      val message = "Money gained must be more than 0."
+      val zeroException = intercept[IllegalArgumentException]:
+        StartField(0)
+      zeroException.getMessage should include(message)
+
+      val negativeException = intercept[IllegalArgumentException]:
+        StartField(-50)
       negativeException.getMessage should include(message)
 
 
@@ -108,19 +164,27 @@ class FieldSpec extends AnyWordSpec with Matchers:
 
     "set to less than zero" should:
       "throw an IllegalArgumentException" in:
-        an [IllegalArgumentException] should be thrownBy
+        val negativeException = intercept[IllegalArgumentException]:
           RentStructure(-1, 0, 0, 0, 0, 0)
+        negativeException.getMessage should include("Rent needs to be at least 0 or higher.")
 
     "set in partially descending order" should:
       "throw an IllegalArgumentException" in:
-        an[IllegalArgumentException] should be thrownBy
+        val descException = intercept[IllegalArgumentException]:
           RentStructure(100, 101, 1, 2, 3, 4)
+        descException.getMessage should include("The rent needs to increase.")
   
   "A property field" when:
-    "set to a price less than zero" should:
+    "set to a price (less than) zero" should:
       "throw an IllegalArgumentException" in:
-        an [IllegalArgumentException] should be thrownBy:
-          UtilityField(-1)
+        val message = "The price needs to be at least 0."
+        val zeroException = intercept[IllegalArgumentException]:
+          UtilityField(0)
+        zeroException.getMessage should include(message)
+
+        val negativeException = intercept[IllegalArgumentException]:
+          UtilityField(-50)
+        negativeException.getMessage should include(message)
 
 
   "A street-field" when:
@@ -150,13 +214,15 @@ class FieldSpec extends AnyWordSpec with Matchers:
 
     "set to a negative houseCost" should:
       "throw an IllegalArgumentException" in:
-        an[IllegalArgumentException] should be thrownBy
-          StreetField(666, rent, -1, "")
+        val negException = intercept[IllegalArgumentException]:
+          StreetField(666, rent, -1, "Street")
+        negException.getMessage should include("The house/hotel-cost must be higher than 0.")
 
     "set to a bigger house than hotelCost" should:
       "throw an IllegalArgumentException" in:
-        an[IllegalArgumentException] should be thrownBy
-          StreetField(666, rent, 2, "", 1)
+        val negException = intercept[IllegalArgumentException]:
+          StreetField(666, rent, 2, hotelCost = 1)
+        negException.getMessage should include("A hotel should cost the same or more than a house")
 
   
   "A StationField" should:
@@ -170,8 +236,9 @@ class FieldSpec extends AnyWordSpec with Matchers:
       station shouldBe a[RentField[Int]]
   
     "throw an IllegalArgumentException if the rentTable is empty" in:
-      an[IllegalArgumentException] should be thrownBy:
-        StationField(200, "", Vector.empty)
+      val emptyException = intercept[IllegalArgumentException]:
+        StationField(200, rentTable = Vector.empty)
+      emptyException.getMessage should include("The rentTable cannot be empty.")
 
     "return the correct rent based on the number of owned stations" in:
       val station = StationField(666)

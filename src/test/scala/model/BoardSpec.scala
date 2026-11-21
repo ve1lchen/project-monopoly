@@ -24,4 +24,6 @@ class BoardSpec extends AnyWordSpec with Matchers:
 
     "set with an empty field" should:
       "throw an IllegalArgumentException" in:
-        an[IllegalArgumentException] should be thrownBy MBoard(Vector[Field]())
+        val err = intercept[IllegalArgumentException]:
+          MBoard(Vector[Field]())
+        err.getMessage should include ("A board cannot be empty.")
