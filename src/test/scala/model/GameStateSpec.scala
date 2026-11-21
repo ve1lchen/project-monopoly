@@ -40,8 +40,3 @@ class GameStateSpec extends AnyWordSpec with Matchers:
       val stateBankrupts = GameState(players = bankruptedPlayers, propertyMap = Map.empty)
       val updated = stateBankrupts.checkGameOver
       updated.isGameOver shouldBe true
-
-
-
-
-

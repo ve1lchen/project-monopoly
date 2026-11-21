@@ -3,45 +3,44 @@ package model
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
-class StandardBoardSpec extends AnyWordSpec with Matchers {
-  
-  "The board" should {
-    "be 40 long" in {
+class StandardBoardSpec extends AnyWordSpec with Matchers:
+
+  "The board" should:
+    "be 40 long" in:
       StandardBoard.fields.length == 40
-    }
-    "have exactly one start field at position zero" in {
+
+    "have exactly one start field at position zero" in:
       StandardBoard.fields.head shouldBe StartField(200)
       StandardBoard.fields.count(_.isInstanceOf[StartField]) shouldBe 1
-    }
-    "contain exactly four stations" in {
+
+    "contain exactly four stations" in:
       StandardBoard.fields.count(_.isInstanceOf[StationField]) shouldBe 4
-    }
-    "contain exactly two utilities" in {
+
+    "contain exactly two utilities" in:
       StandardBoard.fields.count(_.isInstanceOf[UtilityField]) shouldBe 2
-    }
-    "contain exactly three chest fields" in {
+
+    "contain exactly three chest fields" in:
       StandardBoard.fields.count(_ == ChestField) shouldBe 3
-    }
-    "contain exactly three chance fields" in {
+
+    "contain exactly three chance fields" in:
       StandardBoard.fields.count(_ == ChanceField) shouldBe 3
-    }
-    "contain exactly two tax fields" in {
+
+    "contain exactly two tax fields" in:
       StandardBoard.fields.count(_.isInstanceOf[TaxField]) shouldBe 2
-    }
-    "contain exactly one jail field" in {
+
+    "contain exactly one jail field" in:
       StandardBoard.fields.count(_ == JailField) shouldBe 1
-    }
-    "contain exactly one free parking field" in {
+
+    "contain exactly one free parking field" in:
       StandardBoard.fields.count(_ == FreeParkingField) shouldBe 1
-    }
-    "contain exactly one go to jail field" in {
+
+    "contain exactly one go to jail field" in:
       StandardBoard.fields.count(_ == GoToJailField) shouldBe 1
-    }
-    "contain exactly 22 streets" in {
+
+    "contain exactly 22 streets" in:
       StandardBoard.fields.count(_.isInstanceOf[StreetField]) shouldBe 22
-    }
-    
-    "contain all fields in the correct order with the correct properties" in {
+
+    "contain all fields in the correct order with the correct properties" in:
       StandardBoard.fields shouldBe Vector(
         StartField(200),
 
@@ -92,7 +91,3 @@ class StandardBoardSpec extends AnyWordSpec with Matchers {
         TaxField(100, "Luxury Tax"),
         StreetField(400, RentStructure(50, 200, 600, 1400, 1700, 2000), 200, "Boardwalk")
       )
-    }
-  }
-
-}

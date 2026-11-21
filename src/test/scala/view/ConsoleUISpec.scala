@@ -33,11 +33,10 @@ class ConsoleUISpec extends AnyWordSpec with Matchers:
     val out = new ByteArrayOutputStream()
     val printer = new PrintStream(out, true, UTF_8)
 
-    scala.Console.withIn(in) {
-      scala.Console.withOut(printer) {
+    scala.Console.withIn(in):
+      scala.Console.withOut(printer):
         ui.run()
-      }
-    }
+
     (controller, normalize(out.toString(UTF_8)))
 
   private def normalize(raw: String): String =
@@ -58,11 +57,9 @@ class ConsoleUISpec extends AnyWordSpec with Matchers:
       val output = new ByteArrayOutputStream()
       val printer = new PrintStream(output, true, UTF_8)
 
-      scala.Console.withIn(input) {
-        scala.Console.withOut(printer) {
+      scala.Console.withIn(input):
+        scala.Console.withOut(printer):
           ui.run()
-        }
-      }
 
       val text = output.toString(UTF_8)
       text should include ("RESULTS")
