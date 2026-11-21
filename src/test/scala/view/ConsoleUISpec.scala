@@ -1,6 +1,7 @@
 package view
 
 import controller.GameController
+import model.*
 import model.{FixedDice, GameState, Player}
 import model.{AwaitingActionState, AwaitingRollState}
 import org.scalatest.matchers.should.Matchers
@@ -33,11 +34,10 @@ class ConsoleUISpec extends AnyWordSpec with Matchers:
     val out        = new ByteArrayOutputStream()
     val printer    = new PrintStream(out, true, UTF_8)
 
-    scala.Console.withIn(in) {
-      scala.Console.withOut(printer) {
+    scala.Console.withIn(in):
+      scala.Console.withOut(printer):
         ui.run()
-      }
-    }
+
     (controller, normalize(out.toString(UTF_8)))
 
   private def normalize(raw: String): String =
@@ -54,7 +54,6 @@ class ConsoleUISpec extends AnyWordSpec with Matchers:
 
       text should include("monopoly")
       text should include(">>")
-      text should include("field has no owner")
 
     "clear the screen before displaying the ui" in:
       val controller = GameController(newState(), new FixedDice((2, 3)))
@@ -81,11 +80,9 @@ class ConsoleUISpec extends AnyWordSpec with Matchers:
       val output  = new ByteArrayOutputStream()
       val printer = new PrintStream(output, true, UTF_8)
 
-      scala.Console.withIn(input) {
-        scala.Console.withOut(printer) {
+      scala.Console.withIn(input):
+        scala.Console.withOut(printer):
           ui.run()
-        }
-      }
 
       val text = output.toString(UTF_8)
       text should include("RESULTS")
@@ -115,18 +112,20 @@ class ConsoleUISpec extends AnyWordSpec with Matchers:
       state.getCurrentPlayer.position shouldBe 5
       state.lastRoll shouldBe Some((0, (2, 3)))
       state.turnState shouldBe AwaitingActionState
-      text should include("field5")
+      text should include (StandardBoard.get(5).name.toLowerCase)
 
     "ignore a second roll in the same turn" in:
       val (controller, _) = runUi("1\n1\n0\n")
       controller.getState.getCurrentPlayer.position shouldBe 5
 
+    val remainingMoney = 1500 - StandardBoard.get(5).asInstanceOf[PropertyField].price
+
     "buy the current property" in:
       val (controller, text) = runUi("1\n2\n0\n")
       val state              = controller.getState
       state.propertyMap shouldBe Map(5 -> 0)
-      state.players(0).money shouldBe 1400
-      text should include("1400")
+      state.players(0).money shouldBe remainingMoney
+      text should include (remainingMoney.toString)
 
     "not charge the player when buying on a non-purchasable field" in:
       val (controller, _) = runUi("2\n0\n")
@@ -135,7 +134,7 @@ class ConsoleUISpec extends AnyWordSpec with Matchers:
 
     "not charge the player twice for the same property" in:
       val (controller, _) = runUi("1\n2\n2\n0\n")
-      controller.getState.players(0).money shouldBe 1400
+      controller.getState.players(0).money shouldBe remainingMoney
       controller.getState.propertyMap shouldBe Map(5 -> 0)
 
     "not let another player buy an owned property" in:
@@ -173,8 +172,8 @@ class ConsoleUISpec extends AnyWordSpec with Matchers:
 
     "show the money of every player in the results" in:
       val (_, text) = runUi("1\n2\n3\n0\n")
-      text should include("1400")
-      text should include("1500")
+      text should include (remainingMoney.toString)
+      text should include ("1500")
 
     "show input invitation" in:
       val (_, text) = runUi("0\n")
@@ -185,11 +184,12 @@ class ConsoleUISpec extends AnyWordSpec with Matchers:
       text should include("last roll: -")
 
     "show properties in result screen" in:
-      val (_, text) = runUi("1\n2\n3\n1\n3\n1\n2\n3\n0\n")
-      text should include("5, 10")
-      text should include("alice || 1300 || properties: 5, 10")
-      text should include("renee || 1500 || properties:")
-      text should not include ("1, 2, 3")
+      val (_, text) = runUi("1\n2\n3\n1\n3\n1\n3\n1\n3\n1\n2\n3\n0\n")
+      text should include("alice || 1100 || properties: 5, 15")
+      text should include("renee || 1500 || properties: ")
+      text should include("cost: 200 field has no owner")
+      text should include("last roll: - current field: start [1] roll")
+      text should not include "1, 2, 3"
       text should include("------")
 
     "show field owner" in:

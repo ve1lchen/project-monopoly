@@ -8,9 +8,9 @@ class DiceSpec extends AnyWordSpec with Matchers:
   "A RandomDice" should:
     "return a number between 1 and 6" in:
       val result = RandomDice().roll()
-      result._1 should ((be >= 1 and be <= 6))
-      result._2 should ((be >= 1 and be <= 6))
-
+      result._1 should (be >= 1 and be <= 6)
+      result._2 should (be >= 1 and be <= 6)
+    
   "A FixedDice" should:
     "return 5 and 5" in:
       val result = FixedDice((5, 5)).roll()

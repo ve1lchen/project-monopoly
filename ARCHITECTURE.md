@@ -7,11 +7,6 @@ The current console prototype supports rolling dice, moving around a board,
 buying properties, switching turns and displaying results when the user exits.
 A GUI and further game rules are planned.
 
-`DummyBoard` and `DummyField` are temporary placeholders used while the other
-team member develops the board and field classes. They allow game logic and UI
-work to continue independently. Their layout, prices and rents are sample data,
-not the final Monopoly board or rules.
-
 ## Components and Dependencies
 
 ```mermaid
@@ -45,7 +40,6 @@ Solid arrows show dependencies; dashed arrows show interface implementations.
 | `ConsoleUI` | Reads commands, observes the controller, renders the current state and displays results on exit. |
 | `Board` | Interface exposing `size: Int` and `getField(position: Int): Field`. |
 | `Field` | Interface exposing `cost`, `rent`, `name` and `fieldType`. |
-| `DummyBoard`, `DummyField` | Temporary implementations pending integration of the other team member's classes. The default board has 11 fields: Start and 10 businesses. |
 | `FieldType` | Initial enum of field categories; most category-specific actions are not implemented. |
 | `ResultStatus` | Purchase outcomes: `Success`, `NotPurchasable`, `OwnerIsYou`, `AlreadyOwned` and `InsufficientFunds`. |
 
@@ -109,21 +103,10 @@ index to display the player who rolled, including after a turn change.
 
 ## Integration with the Board and Field Implementation
 
-The other team member owns development of the concrete board and field classes.
-`DummyBoard` and `DummyField` bridge that unfinished integration and should be
-replaced when the real implementations are ready.
-
 Game state and controller APIs use `Board` and `Field`, so a compatible board can
 be supplied through `GameState(players = players, board = actualBoard)`.
-`GameState` currently defaults to `DummyBoard()`; the application entry point
+`GameState` currently defaults to `StandardBoard`; the application entry point
 uses this default. Tests also rely on the placeholder layout and prices.
-
-Before replacing the placeholders, agree on the `Board` and `Field` contracts,
-position numbering and field categories. Update application wiring and tests
-that depend on sample data. The current interfaces are integration contracts in
-this branch; they do not imply that the other member's implementation is already
-compatible. The target full board has 40 fields, but `Board` does not enforce a
-particular size.
 
 ## Testing and Build
 
@@ -145,7 +128,6 @@ guarantee that all edge cases and game rules have been tested.
 
 ## Remaining Work and Known Limitations
 
-- Integrate the other team member's board and field implementations.
 - Implement rent, rewards for crossing Start, field events, taxes, jail,
   vacation and the three-consecutive-doubles rule.
 - Connect bankruptcy and game-over handling to gameplay. `checkGameOver` counts

@@ -1,7 +1,7 @@
 package controller
 
 import controller.GameController
-import model.{FixedDice, GameState, Player, RandomDice}
+import model.*
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
@@ -36,12 +36,13 @@ class GameControllerSpec extends AnyWordSpec with Matchers:
 
     "manage turn with START crossing" in:
       val players: Vector[Player] =
-        Vector(Player("Alice", position = 9), Player("Renee"))
+        Vector(Player("Alice", position = 40), Player("Renee"))
       val controller = GameController(GameState(players), new FixedDice((2, 3)))
       controller.rollDice()
       controller.endTurn()
       val updatedState = controller.getState
-      updatedState.players(0).position shouldBe 3
+      updatedState.players(0).position shouldBe updatedState
+        .board.relativePosition(40 + 2 + 3)
 
     "be able to buy property" in:
       val players: Vector[Player] =
@@ -52,7 +53,8 @@ class GameControllerSpec extends AnyWordSpec with Matchers:
       val state = controller.getState
       state.propertyMap should contain(3 -> 0)
       state.players(1).money shouldBe 1500
-      state.players(0).money shouldBe 1400
+      state.players(0).money shouldBe 1500 - StandardBoard.get(3)
+        .asInstanceOf[PropertyField].price
 
     "not be able to buy property with insufficient money" in:
       val players: Vector[Player] =
@@ -103,8 +105,10 @@ class GameControllerSpec extends AnyWordSpec with Matchers:
       otherController.getCurrentFieldOwner shouldBe Some(players(1))
 
     "allow buying property with exactly enough money" in:
+      val position = 3
       val players = Vector(
-        Player("Alice", money = 100, position = 3, id = 0),
+        Player("Alice", money = StandardBoard.get(position)
+          .asInstanceOf[PropertyField].price, position = position, id = 0),
         Player("Renee", id = 1)
       )
 

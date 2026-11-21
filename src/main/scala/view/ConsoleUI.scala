@@ -1,6 +1,7 @@
 package view
 import controller.{GameController, Observer}
 import controller.command.*
+import model.PropertyField
 
 import scala.io.StdIn.readLine
 
@@ -18,9 +19,8 @@ class ConsoleUI(controller: GameController) extends Observer:
     println("============= RESULTS ============")
     for player <- state.players do
       println(s" ${player.name} || ${player.money} ||")
-      val property = state.propertyMap.collect {
-        case (field, ownerId) if ownerId == player.id => field
-      }
+      val property = state.propertyMap.collect:
+        case (fieldId, ownerId) if ownerId == player.id => fieldId
       println(s"   Properties: ${property.mkString(", ")}")
       println("-------------------------------------")
 
@@ -55,20 +55,25 @@ class ConsoleUI(controller: GameController) extends Observer:
       case Some(id, (a, b)) => s"${state.players(id).name}: $a & $b"
       case None             => "-"
 
+    val propertyInfo = currentField match
+      case property: PropertyField =>
+        controller.getCurrentFieldOwner match
+          case Some(owner) =>
+            s"Owner: ${owner.name}"
+          case None =>
+            s"Cost: ${property.price}\nField has no owner"
+      case _ => ""
+
     val field =
       s"""
          |======================== MONOPOLY ========================
          |
          |Current turn: ${state.getCurrentPlayer.name}
          |Money: ${state.getCurrentPlayer.money}
-         |Last roll: ${rollText}
+         |Last roll: $rollText
          |
          |Current field: ${currentField.name}
-         |Cost: ${currentField.cost}
-         |${controller.getCurrentFieldOwner match
-          case Some(player) => s"Owner: ${player.name}"
-          case None         => "Field has no owner"
-        }
+         |$propertyInfo
          |
          |[1] Roll
          |[2] Buy

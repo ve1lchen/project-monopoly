@@ -1,14 +1,7 @@
 package controller
 
-import model.ResultStatus.{
-  AlreadyOwned,
-  InsufficientFunds,
-  NotPurchasable,
-  OwnerIsYou,
-  Success
-}
-import model.FieldType.Business
-import model.{ResultStatus, Dice, Board, Field, GameState, Player}
+import model.ResultStatus.{AlreadyOwned, InsufficientFunds, NotPurchasable, OwnerIsYou, Success}
+import model.*
 
 class GameController(
     initialState: GameState,
@@ -47,30 +40,34 @@ class GameController(
 
   def buyProperty(): ResultStatus =
     val player  = state.getCurrentPlayer
-    val field   = state.board.getField(player.position)
+    val field   = state.board.get(player.position)
     val fieldId = player.position
 
     state.propertyMap.get(fieldId) match
       case Some(ownerId) if ownerId == state.getCurrentPlayer.id => OwnerIsYou
       case Some(_)                                               => AlreadyOwned
-      case None if field.fieldType != Business => NotPurchasable
-      case None if player.money < field.cost   => InsufficientFunds
-      case None                                =>
-        val updatedPlayers = state.players.updated(
-          state.currentPlayerIndex,
-          player.pay(field.cost)
-        )
-        state = state
-          .copy(players = updatedPlayers)
-          .updatePropertyMap(fieldId, player.id)
-        notifyObservers()
-        Success
+      case None => field match
+        case property: PropertyField =>
+          if player.money < property.price then
+            InsufficientFunds
+          else
+            val updatedPlayers = state.players.updated(
+              state.currentPlayerIndex,
+              player.pay(property.price)
+            )
+            state = state
+              .copy(players = updatedPlayers)
+              .updatePropertyMap(fieldId, player.id)
+            notifyObservers()
+            Success
+        case _ =>
+          NotPurchasable
 
   def getState: GameState =
     state
 
   def getCurrentField(player: Player): Field =
-    state.board.getField(player.position)
+    state.board.get(player.position)
 
   def getCurrentFieldOwner: Option[Player] =
     val fieldId = state.getCurrentPlayer.position

@@ -33,10 +33,6 @@ Rolling, movement, property purchases and turn changes are implemented.
 Rent, Start rewards, special-field actions, bankruptcy integration and automatic
 game termination remain unfinished.
 
-`DummyBoard` and `DummyField` are temporary placeholders for the board and field
-classes being developed by the other team member. The current 11-field board and
-its prices are sample data. They will be replaced during integration.
-
 See [ARCHITECTURE.md](ARCHITECTURE.md) for component responsibilities, the turn
 flow, integration contracts and known limitations.
 

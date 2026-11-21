@@ -5,7 +5,7 @@ case class GameState(
     currentPlayerIndex: Int = 0,
     isGameOver: Boolean = false,
     propertyMap: Map[Int, Int] = Map.empty, // FieldId: PlayerID
-    board: Board = DummyBoard(),
+    board: Board = StandardBoard,
     lastRoll: Option[(Int, (Int, Int))] = None, // PlayerID, rolled
     turnState: TurnState = AwaitingRollState
 ):
@@ -30,10 +30,8 @@ case class GameState(
   Changes player`s position and sets turnState = AwaitingActionState
    */
   def movePlayer(rolled: (Int, Int)): GameState =
-    val newPosition =
-      (players(
-        currentPlayerIndex
-      ).position + rolled._2 + rolled._1) % board.size
+    val newPosition = board.relativePosition(players(currentPlayerIndex)
+      .position + rolled._2 + rolled._1)
     val updatedPlayers = players.updated(
       currentPlayerIndex,
       players(currentPlayerIndex).changePosition(newPosition)
