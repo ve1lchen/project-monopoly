@@ -80,7 +80,7 @@ trait PropertyField extends ActionField:
  * A field where a player needs to pay rent.
  * @tparam C The context required.
  */
-trait RentField[C] extends MoneyField[C]:
+trait RentField[C] extends MoneyField[C], OnEnterField:
   override def name = "Rent"
   val rentStrategy: RentStrategy[C]
   final override def money(context: C): Option[Int] =

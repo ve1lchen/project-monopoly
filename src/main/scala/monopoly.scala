@@ -1,5 +1,5 @@
 import controller.GameController
-import model.{GameState, Player, RandomDice}
+import model.{GameState, RandomDice}
 import view.{ConsoleSetup, ConsoleUI}
 
 object monopoly:

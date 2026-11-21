@@ -1,25 +1,19 @@
 package controller
 
-import model.ResultStatus.{AlreadyOwned, InsufficientFunds, NotPurchasable, OwnerIsYou, Success}
+import model.ResultStatus.*
 import model.*
+
 
 class GameController(
     initialState: GameState,
     dice: Dice
-):
+) extends Observable:
 
-  private var state: GameState            = initialState
-  private val board: Board                = state.board
-  private var observers: Vector[Observer] = Vector.empty
+  private var state: GameState  = initialState
+  private val board: Board      = state.board
 
-  def addObserver(observer: Observer): Unit =
-    observers = observers :+ observer
-
-  private def notifyObservers(): Unit =
-    observers.foreach(_.update())
-
-  /*
-  Rolls dices -> saves the travel -> processes the field
+  /**
+   * Rolls dices -> saves the travel -> processes the field
    */
   def rollDice(): Unit =
     state.turnState
@@ -28,8 +22,8 @@ class GameController(
         state = updatedState
         notifyObservers()
 
-  /*
-  Ends Turn only after roll
+  /**
+   * Ends Turn only after roll
    */
   def endTurn(): Unit =
     state.turnState
