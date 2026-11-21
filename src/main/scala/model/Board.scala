@@ -7,6 +7,6 @@ trait Board:
   def getAbsolute(position: Int): Option[Field] = fields.lift(position)
   def relativePosition(position: Int): Int = Math.floorMod(position, size)
   
-  require(fields.nonEmpty, "A field cannot be empty.")
+  require(fields.nonEmpty, "A board cannot be empty.")
 
 case class MBoard(fields: Vector[Field]) extends Board
