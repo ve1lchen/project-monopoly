@@ -203,7 +203,7 @@ class FieldSpec extends AnyWordSpec with Matchers:
           UtilityField(0)
 
 
-  "A street-field" when:
+  "A StreetField" when:
     val rent = RentStructure(100, 101, 102, 103, 104, 105)
     "initialized normally" should:
       val street = StreetField(666, rent, 1, "Street")
@@ -239,6 +239,17 @@ class FieldSpec extends AnyWordSpec with Matchers:
           StreetField(666, rent, -1, "Street")
         negException.getMessage should include(message)
 
+    "set to a zero or negative hotelCost" should:
+      "throw an IllegalArgumentException" in:
+        val message = "The house/hotel-cost must be higher than 0."
+        val zeroException = intercept[IllegalArgumentException]:
+          StreetField(666, rent, 1, hotelCost = 0)
+        zeroException.getMessage should include(message)
+
+        val negException = intercept[IllegalArgumentException]:
+          StreetField(666, rent, 1, hotelCost = -1)
+        negException.getMessage should include(message)
+
     "set to a bigger house than hotelCost" should:
       "throw an IllegalArgumentException" in:
         val negException = intercept[IllegalArgumentException]:
@@ -249,6 +260,11 @@ class FieldSpec extends AnyWordSpec with Matchers:
       "not throw an exception" in:
         noException shouldBe thrownBy:
           StreetField(0, rent, 1, hotelCost = 1)
+
+    "set to different house/hotel costs" should:
+      "not throw an exception" in:
+        noException shouldBe thrownBy:
+          StreetField(0, rent, 1, hotelCost = 2)
 
   
   "A StationField" should:
@@ -304,7 +320,7 @@ class FieldSpec extends AnyWordSpec with Matchers:
       val negException = intercept[IllegalArgumentException]:
         utility.money(2, -3)
       negException.getMessage should include("A dice roll must be at least 0.")
-      
+
     "not throw an exception if the dice roll is 0" in:
       noException shouldBe thrownBy:
         utility.money(2, 0)
