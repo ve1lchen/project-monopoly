@@ -1,6 +1,7 @@
 package model
 
 import model.DevelopmentLevel.*
+import model.*
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.matchers.should.Matchers
 
@@ -52,8 +53,8 @@ class FieldSpec extends AnyWordSpec with Matchers:
 
   "A RentField" should:
     "have the default name Rent" in:
-      new RentField[Unit]:
-        protected def calculateRent(context: Unit): Option[Int] = None
+      new RentField[Int]:
+        val rentStrategy: RentStrategy[Int] = StationRentStrategy()
       .name shouldBe "Rent"
 
 
@@ -156,51 +157,18 @@ class FieldSpec extends AnyWordSpec with Matchers:
       categorize(TaxField(100)) shouldBe "Money"
       categorize(StartField(100)) shouldBe "OnPass"
       categorize(JailField) shouldBe "Eventless"
-
-  "A rent structure" when:
-    "set with number" should:
-      val rentStructure = RentStructure(100, 101, 102, 103, 104, 105)
-      "have the same numbers" in:
-        rentStructure.baseRent shouldBe 100
-        rentStructure.oneHouse shouldBe 101
-        rentStructure.twoHouses shouldBe 102
-        rentStructure.threeHouses shouldBe 103
-        rentStructure.fourHouses shouldBe 104
-        rentStructure.hotel shouldBe 105
-
-    "set to less than zero" should:
-      "throw an IllegalArgumentException" in:
-        val negativeException = intercept[IllegalArgumentException]:
-          RentStructure(-1, 0, 0, 0, 0, 0)
-        negativeException.getMessage should include("Rent needs to be at least 0 or higher.")
-
-    "set to zero" should:
-      "not throw an exception" in:
-        noException shouldBe thrownBy:
-          RentStructure(0, 0, 0, 0, 0, 0)
-
-    "set in partially descending order" should:
-      "throw an IllegalArgumentException" in:
-        val descException = intercept[IllegalArgumentException]:
-          RentStructure(100, 101, 1, 2, 3, 4)
-        descException.getMessage should include("The rent needs to increase.")
-
-    "set in a partially non-increasing order" should:
-      "not throw an exception" in:
-        noException shouldBe thrownBy:
-          RentStructure(0, 0, 0, 0, 0, 0)
   
   "A property field" when:
     "set to a price less than zero" should:
       "throw an IllegalArgumentException" in:
         val negativeException = intercept[IllegalArgumentException]:
-          UtilityField(-50)
+          UtilityField(-50, "Utility")
         negativeException.getMessage should include("The price needs to be at least 0.")
 
     "set to the price zero" should:
       "not throw an exception" in:
         noException shouldBe thrownBy:
-          UtilityField(0)
+          UtilityField(0, "Utility")
 
 
   "A StreetField" when:
@@ -215,7 +183,8 @@ class FieldSpec extends AnyWordSpec with Matchers:
       "have initialized values" in:
         street.houseCost shouldBe 1
         street.hotelCost shouldBe 1
-        street.rentTable shouldBe rent
+        street.rentStrategy.asInstanceOf[StreetRentStrategy]
+          .rentTable shouldBe rent
 
       "have the default name Street" in:
         street.name shouldBe "Street"
@@ -243,35 +212,36 @@ class FieldSpec extends AnyWordSpec with Matchers:
       "throw an IllegalArgumentException" in:
         val message = "The house/hotel-cost must be higher than 0."
         val zeroException = intercept[IllegalArgumentException]:
-          StreetField(666, rent, 1, hotelCost = 0)
+          StreetField(666, rent, 1, "Street", 0)
         zeroException.getMessage should include(message)
 
         val negException = intercept[IllegalArgumentException]:
-          StreetField(666, rent, 1, hotelCost = -1)
+          StreetField(666, rent, 1, "Street", -1)
         negException.getMessage should include(message)
 
     "set to a bigger house than hotelCost" should:
       "throw an IllegalArgumentException" in:
         val negException = intercept[IllegalArgumentException]:
-          StreetField(666, rent, 2, hotelCost = 1)
+          StreetField(666, rent, 2, "Street", 1)
         negException.getMessage should include("A hotel should cost the same or more than a house")
 
     "set to the same house/hotel cost" should:
       "not throw an exception" in:
         noException shouldBe thrownBy:
-          StreetField(0, rent, 1, hotelCost = 1)
+          StreetField(0, rent, 1, "Street", 1)
 
     "set to different house/hotel costs" should:
       "not throw an exception" in:
         noException shouldBe thrownBy:
-          StreetField(0, rent, 1, hotelCost = 2)
+          StreetField(0, rent, 1, "Street", 2)
 
   
   "A StationField" should:
-    val station = StationField(666)
+    val station = StationField(666, "Station")
     "be initialized with default values" in:
       station.name shouldBe "Station"
-      station.rentTable shouldBe Vector(25, 50, 100, 200)
+      station.rentStrategy.asInstanceOf[StationRentStrategy]
+        .rentTable shouldBe Vector(25, 50, 100, 200)
     
     "have correct trait hierarchy" in:
       station shouldBe a[PropertyField]
@@ -279,18 +249,18 @@ class FieldSpec extends AnyWordSpec with Matchers:
   
     "throw an IllegalArgumentException if the rentTable is empty" in:
       val emptyException = intercept[IllegalArgumentException]:
-        StationField(200, rentTable = Vector.empty)
+        StationField(200, "Station", Vector.empty)
       emptyException.getMessage should include("The rentTable cannot be empty.")
 
     "return the correct rent based on the number of owned stations" in:
-      val station = StationField(666)
+      val station = StationField(666, "Station")
       // 1 Station im Besitz -> Index 0 im rentTable
       station.money(1) shouldBe Some(-25)
       station.money(2) shouldBe Some(-50)
       station.money(4) shouldBe Some(-200)
 
     "return None if the player owns no stations or the count exceeds the rentTable" in:
-      val station = StationField(666)
+      val station = StationField(666, "Station")
       // 0 Stationen (0 - 1 = -1 -> out of bounds)
       station.money(0) shouldBe None
       // 5 Stationen (5 - 1 = 4 -> out of bounds)
@@ -298,10 +268,11 @@ class FieldSpec extends AnyWordSpec with Matchers:
 
   
   "A UtilityField" should:
-    val utility = UtilityField(150)
+    val utility = UtilityField(150, "Utility")
     "be initialized with default values" in:
       utility.name shouldBe "Utility"
-      utility.rentTable shouldBe Vector(4, 10)
+      utility.rentStrategy.asInstanceOf[UtilityRentStrategy]
+        .rentTable shouldBe Vector(4, 10)
 
     "be initialized with price" in:
       utility.price shouldBe 150

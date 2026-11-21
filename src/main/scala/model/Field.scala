@@ -1,7 +1,5 @@
 package model
 
-import model.DevelopmentLevel.*
-
 
 trait Field:
   def name: String = "Field"
@@ -84,26 +82,14 @@ trait PropertyField extends ActionField:
  */
 trait RentField[C] extends MoneyField[C]:
   override def name = "Rent"
-  protected def calculateRent(context: C): Option[Int]
-  final override def money(context: C): Option[Int] = calculateRent(context).map(-_)
-
-case class RentStructure(baseRent: Int,
-  oneHouse: Int, twoHouses: Int, threeHouses: Int, fourHouses: Int,
-  hotel: Int) {
-
-  require(
-    Seq(baseRent, oneHouse, twoHouses, threeHouses, fourHouses, hotel)
-      .forall(_ >= 0), "Rent needs to be at least 0 or higher.")
-  require(baseRent <= oneHouse && oneHouse <= twoHouses
-      && twoHouses <= threeHouses && threeHouses <= fourHouses
-      && fourHouses <= hotel, "The rent needs to increase.")}
-
-enum DevelopmentLevel:
-  case Undeveloped, OneHouse, TwoHouses, ThreeHouses, FourHouses, Hotel
+  val rentStrategy: RentStrategy[C]
+  final override def money(context: C): Option[Int] =
+    rentStrategy.calculateRent(context).map(-_)
 
 
 case class StreetField(price: Int,
-  rentTable: RentStructure, houseCost: Int, override val name: String = "Street", hotelCost: Int)
+  rentStrategy: RentStrategy[DevelopmentLevel], houseCost: Int,
+  override val name: String = "Street", hotelCost: Int)
   extends PropertyField, RentField[DevelopmentLevel]:
   validatePrice(price)
   require(houseCost > 0 && hotelCost > 0,
@@ -111,44 +97,42 @@ case class StreetField(price: Int,
   require(houseCost <= hotelCost,
     "A hotel should cost the same or more than a house")
 
-  protected def calculateRent(developmentLevel: DevelopmentLevel): Option[Int] =
-    Some(developmentLevel match
-      case Undeveloped  => rentTable.baseRent
-      case OneHouse     => rentTable.oneHouse
-      case TwoHouses    => rentTable.twoHouses
-      case ThreeHouses  => rentTable.threeHouses
-      case FourHouses   => rentTable.fourHouses
-      case Hotel        => rentTable.hotel)
-
 object StreetField:
+  def apply(price: Int, rentStrategy: RentStrategy[DevelopmentLevel],
+            houseCost: Int, name: String): StreetField =
+    new StreetField(price, rentStrategy, houseCost, name, houseCost)
+
+  def apply(price: Int, rentTable: RentStructure,
+            houseCost: Int, name: String, hotelCost: Int): StreetField =
+    new StreetField(price, StreetRentStrategy(rentTable), houseCost,
+      name, hotelCost)
+  
   def apply(price: Int, rentTable: RentStructure,
             houseCost: Int, name: String): StreetField =
-    new StreetField(price, rentTable, houseCost, name, houseCost)
+    new StreetField(price, StreetRentStrategy(rentTable), houseCost,
+      name, houseCost)
 
 
 case class StationField(price: Int, override val name: String = "Station",
-  // The rent depending on the amount of stations the player owns.
-  rentTable: Vector[Int] = Vector(25, 50, 100, 200)
-                       ) extends PropertyField, RentField[Int]:
+  rentStrategy: RentStrategy[Int]) extends PropertyField, RentField[Int]:
   validatePrice(price)
-  require(rentTable.nonEmpty, "The rentTable cannot be empty.")
-  /**
-   * @param ownedStationsCount the total amount of stations this player owns
-   * @return the rent or None
-   */
-  protected def calculateRent(ownedStationsCount: Int): Option[Int] =
-    rentTable.lift(ownedStationsCount - 1)
+
+object StationField:
+  def apply(price: Int, name: String, rentTable: Vector[Int]): StationField =
+    new StationField(price, name, StationRentStrategy(rentTable))
+
+  def apply(price: Int, name: String): StationField =
+    new StationField(price, name, StationRentStrategy())
 
 
 case class UtilityField(price: Int, override val name: String = "Utility",
-                        rentTable: Vector[Int] = Vector(4, 10))
+                        rentStrategy: RentStrategy[(Int, Int)])
   extends PropertyField, RentField[(Int, Int)]:
   validatePrice(price)
-  
-  def calculateRent(context: (Int, Int)): Option[Int] = {
-    val (ownedUtilitiesCount, diceRoll) = context
-    
-    require(diceRoll >= 0, "A dice roll must be at least 0.")
-    
-    Option(rentTable(ownedUtilitiesCount - 1) * diceRoll)
-  }
+
+object UtilityField:
+  def apply(price: Int, name: String, rentTable: Vector[Int]): UtilityField =
+    new UtilityField(price, name, UtilityRentStrategy(rentTable))
+
+  def apply(price: Int, name: String): UtilityField =
+    new UtilityField(price, name, UtilityRentStrategy())
