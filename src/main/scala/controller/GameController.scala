@@ -46,8 +46,9 @@ class GameController(
     getCurrentField match
       case property: PropertyField =>
         state.propertyMap.get(fieldId) match
-          case Some(_) =>
-            AlreadyOwned
+          case Some(ownerId) =>
+            if ownerId == player.id then OwnerIsYou
+            else AlreadyOwned
           case None if player.money < property.price =>
             InsufficientFunds
           case None =>

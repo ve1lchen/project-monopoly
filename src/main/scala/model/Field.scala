@@ -5,7 +5,10 @@ import model.DevelopmentLevel.*
 
 sealed trait Field:
   def name: String = "Field"
-  require(!name.isBlank, "A field-name cannot be empty.")
+
+  protected def validateName(name: String): Unit =
+    require(name != null && !name.isBlank,
+      "A field-name cannot be empty.")
 
 /**
  * A field where something happens.
@@ -31,6 +34,7 @@ case object GoToJailField extends OnEnterField:
 sealed trait MoneyField[C] extends EventField:
   override def name = "Money"
   def money(context: C): Option[Int]
+  validateName(name)
 
 sealed trait GainMoneyField extends MoneyField[Unit]:
   override def name = "Gain Money"

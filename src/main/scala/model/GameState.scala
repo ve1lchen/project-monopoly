@@ -39,8 +39,8 @@ case class GameState(
   Changes player`s position and sets turnPhase = AwaitingAction
    */
   def movePlayer(rolled: (Int, Int)): GameState =
-    val newPosition =
-      (players(currentPlayerIndex).position + rolled._2 + rolled._1) % board.size
+    val newPosition = board.relativePosition(players(currentPlayerIndex)
+      .position + rolled._2 + rolled._1)
     val updatedPlayers = players.updated(
       currentPlayerIndex,
       players(currentPlayerIndex).changePosition(newPosition)
