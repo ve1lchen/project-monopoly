@@ -59,13 +59,3 @@ class GameController(
 
   def getState: GameState =
     state
-
-  def getCurrentField(player: Player): Field =
-    state.board.get(player.position)
-
-  def getCurrentFieldOwner: Option[Player] =
-    val fieldId = state.getCurrentPlayer.position
-    state.propertyMap
-      .get(fieldId)
-      .flatMap: id =>
-        state.players.find(_.id == id)

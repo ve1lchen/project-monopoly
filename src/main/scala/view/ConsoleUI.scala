@@ -47,9 +47,9 @@ class ConsoleUI(controller: GameController) extends Observer:
             case Some(command) => command.execute()
             case None          => render()
 
-  def render(): Unit =
+  private def render(): Unit =
     val state        = controller.getState
-    val currentField = controller.getCurrentField(state.getCurrentPlayer)
+    val currentField = state.getCurrentField()
 
     val rollText = state.lastRoll match
       case Some(id, (a, b)) => s"${state.players(id).name}: $a & $b"
@@ -57,7 +57,7 @@ class ConsoleUI(controller: GameController) extends Observer:
 
     val propertyInfo = currentField match
       case property: PropertyField =>
-        controller.getCurrentFieldOwner match
+        state.getCurrentFieldOwner match
           case Some(owner) =>
             s"Owner: ${owner.name}"
           case None =>

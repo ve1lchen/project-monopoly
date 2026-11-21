@@ -55,3 +55,12 @@ case class GameState(
 
   def getCurrentPlayer: Player =
     players(currentPlayerIndex)
+
+  def getCurrentField(player: Player = getCurrentPlayer): Field =
+    board.get(player.position)
+
+  def getCurrentFieldOwner: Option[Player] =
+    propertyMap.get(getCurrentPlayer.position)
+      .flatMap: id =>
+        players.find(_.id == id)
+  

@@ -102,7 +102,7 @@ class GameControllerSpec extends AnyWordSpec with Matchers:
 
       otherController.buyProperty() shouldBe model.ResultStatus.AlreadyOwned
 
-      otherController.getCurrentFieldOwner shouldBe Some(players(1))
+      otherController.getState.getCurrentFieldOwner shouldBe Some(players(1))
 
     "allow buying property with exactly enough money" in:
       val position = 3
