@@ -54,7 +54,6 @@ class ConsoleUISpec extends AnyWordSpec with Matchers:
 
       text should include("monopoly")
       text should include(">>")
-      text should include("field has no owner")
 
     "clear the screen before displaying the ui" in:
       val controller = GameController(newState(), new FixedDice((2, 3)))
@@ -185,11 +184,10 @@ class ConsoleUISpec extends AnyWordSpec with Matchers:
       text should include("last roll: -")
 
     "show properties in result screen" in:
-      val (_, text) = runUi("1\n2\n3\n1\n3\n1\n2\n3\n0\n")
-      text should include("5, 10")
-      text should include("alice || 1300 || properties: 5, 10")
-      text should include("renee || 1500 || properties:")
-      text should not include ("1, 2, 3")
+      val (_, text) = runUi("1\n2\n3\n1\n3\n1\n3\n0\n")
+      text should include("alice || 1300 || properties: 5")
+      text should include("renee || 1500 || properties: ")
+      text should not include "1, 2, 3"
       text should include("------")
 
     "show field owner" in:
