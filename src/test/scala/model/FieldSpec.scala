@@ -31,15 +31,21 @@ class FieldSpec extends AnyWordSpec with Matchers:
 
   "A GainMoneyField" should:
     "have the default name Gain Money" in:
-      new GainMoneyField:
+      val gainMoney = new GainMoneyField:
         override def amount: Int = 1
-      .name shouldBe "Gain Money"
+      gainMoney.name shouldBe "Gain Money"
+      gainMoney.money(()) shouldBe Some(1)
 
   "A LoseMoneyField" should:
     "have the default name Lose Money" in:
-      new LoseMoneyField:
+      val loseMoney = new LoseMoneyField:
         override def amount: Int = 1
-      .name shouldBe "Lose Money"
+      loseMoney.name shouldBe "Lose Money"
+      loseMoney.money(()) shouldBe Some(-1)
+
+  "A EventlessField" should:
+    "have the default name Normal Field" in:
+      new EventlessField() {}.name shouldBe "Normal Field"
 
   "A ActionField" should:
     "have the default name Action" in:
@@ -174,7 +180,9 @@ class FieldSpec extends AnyWordSpec with Matchers:
   "A StreetField" when:
     val rent = RentStructure(100, 101, 102, 103, 104, 105)
     "initialized normally" should:
-      val street = StreetField(666, rent, 1, "Street")
+      val street = StreetField(666, StreetRentStrategy(rent), 1, hotelCost = 1)
+      StreetField(1, StreetRentStrategy(rent), 1, "Street")
+      
       
       "have correct trait hierarchy" in:
         street shouldBe a[PropertyField]
@@ -237,11 +245,13 @@ class FieldSpec extends AnyWordSpec with Matchers:
 
   
   "A StationField" should:
-    val station = StationField(666, "Station")
+    val station = StationField(666, rentStrategy = StationRentStrategy())
     "be initialized with default values" in:
       station.name shouldBe "Station"
       station.rentStrategy.asInstanceOf[StationRentStrategy]
         .rentTable shouldBe Vector(25, 50, 100, 200)
+
+      StationField(1, "Station", StationRentStrategy().rentTable)
     
     "have correct trait hierarchy" in:
       station shouldBe a[PropertyField]
@@ -262,7 +272,9 @@ class FieldSpec extends AnyWordSpec with Matchers:
 
   
   "A UtilityField" should:
-    val utility = UtilityField(150, "Utility")
+    val utility = UtilityField(150, rentStrategy = UtilityRentStrategy())
+
+    UtilityField(1, "Utility", UtilityRentStrategy().rentTable)
     "be initialized with default values" in:
       utility.name shouldBe "Utility"
       utility.rentStrategy.asInstanceOf[UtilityRentStrategy]
