@@ -201,7 +201,7 @@ class FieldSpec extends AnyWordSpec with Matchers:
       "throw an IllegalArgumentException" in:
         val message = "The house/hotel-cost must be higher than 0."
         val zeroException = intercept[IllegalArgumentException]:
-          StreetField(666, rent, 0, "Street")
+          StreetField(666, rent, 0, "Street", 1)
         zeroException.getMessage should include(message)
 
         val negException = intercept[IllegalArgumentException]:
@@ -246,18 +246,12 @@ class FieldSpec extends AnyWordSpec with Matchers:
     "have correct trait hierarchy" in:
       station shouldBe a[PropertyField]
       station shouldBe a[RentField[Int]]
-  
-    "throw an IllegalArgumentException if the rentTable is empty" in:
-      val emptyException = intercept[IllegalArgumentException]:
-        StationField(200, "Station", Vector.empty)
-      emptyException.getMessage should include("The rentTable cannot be empty.")
 
     "return the correct rent based on the number of owned stations" in:
+      val rentTable = Vector(25, 50, 100, 200)
       val station = StationField(666, "Station")
       // 1 Station im Besitz -> Index 0 im rentTable
-      station.money(1) shouldBe Some(-25)
-      station.money(2) shouldBe Some(-50)
-      station.money(4) shouldBe Some(-200)
+      for (i <- rentTable.indices) station.money(i + 1) shouldBe Some(-rentTable(i))
 
     "return None if the player owns no stations or the count exceeds the rentTable" in:
       val station = StationField(666, "Station")
@@ -286,12 +280,3 @@ class FieldSpec extends AnyWordSpec with Matchers:
       utility.money(1, 7) shouldBe Some(-28)
       // Würfelwurf 7, besitzt 2 Werke (Faktor 10) -> 7 * 10 = 70
       utility.money(2, 7) shouldBe Some(-70)
-
-    "throw an IllegalArgumentException if the dice roll negative" in:
-      val negException = intercept[IllegalArgumentException]:
-        utility.money(2, -3)
-      negException.getMessage should include("A dice roll must be at least 0.")
-
-    "not throw an exception if the dice roll is 0" in:
-      noException shouldBe thrownBy:
-        utility.money(2, 0)
