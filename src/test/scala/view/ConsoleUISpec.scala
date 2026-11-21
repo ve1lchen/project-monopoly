@@ -184,9 +184,11 @@ class ConsoleUISpec extends AnyWordSpec with Matchers:
       text should include("last roll: -")
 
     "show properties in result screen" in:
-      val (_, text) = runUi("1\n2\n3\n1\n3\n1\n3\n0\n")
-      text should include("alice || 1300 || properties: 5")
+      val (_, text) = runUi("1\n2\n3\n1\n3\n1\n3\n1\n3\n1\n2\n3\n0\n")
+      text should include("alice || 1100 || properties: 5, 15")
       text should include("renee || 1500 || properties: ")
+      text should include("cost: 200 field has no owner")
+      text should include("last roll: - current field: start [1] roll")
       text should not include "1, 2, 3"
       text should include("------")
 
