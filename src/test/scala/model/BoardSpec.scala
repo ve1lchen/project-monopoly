@@ -1,25 +1,26 @@
 package model
 
+import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
 class BoardSpec extends AnyWordSpec with Matchers {
   
   "A board" when {
-    "set with values" have {
-      val vec = Vector(StartField(),FreeParkingField,ChestField,ChanceField)
-      val board = MBoard()
-      "the same" in {
+    "set with values" should {
+      val vec = Vector(StartField(100),FreeParkingField,ChestField,ChanceField)
+      val board = MBoard(vec)
+      "have the same fields" in {
         board.size shouldBe 4
         board.fields shouldBe vec
-        for (int i = 0; i < vec.size; i++) {
-          board.getAbsolute(i) shouldBe vec(i)
+        for (i <- vec.indices) {
+          board.getAbsolute(i) shouldBe Some(vec(i))
         }
       }
       "a circular get" in {
-        for (int i = 0; i < vec.size; i ++) {
+        for (i <- vec.indices) {
           board.get(i) shouldBe vec(i)
         }
-        for (int i = vec.size; i < vec.size * 2; i++) {
+        for (i <- vec.size until vec.size * 2) {
           board.get(i) shouldBe vec(i - vec.size)
         }
       }

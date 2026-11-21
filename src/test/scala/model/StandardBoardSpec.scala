@@ -1,12 +1,13 @@
 package model
 
+import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
 class StandardBoardSpec extends AnyWordSpec with Matchers {
   
   "The board" should {
     "be 40 long" in {
-      StandardBoard.fields.length = 40
+      StandardBoard.fields.length == 40
     }
     "have exactly one start field at position zero" in {
       StandardBoard.fields.head shouldBe StartField(200)
