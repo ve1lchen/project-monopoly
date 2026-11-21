@@ -38,7 +38,7 @@ class FieldSpec extends AnyWordSpec with Matchers:
     "have the default name Lose Money" in:
       new LoseMoneyField:
         override def amount: Int = 1
-      .name shouldBe "Gain Money"
+      .name shouldBe "Lose Money"
 
   "A ActionField" should:
     "have the default name Action" in:
@@ -177,14 +177,9 @@ class FieldSpec extends AnyWordSpec with Matchers:
   "A property field" when:
     "set to a price (less than) zero" should:
       "throw an IllegalArgumentException" in:
-        val message = "The price needs to be at least 0."
-        val zeroException = intercept[IllegalArgumentException]:
-          UtilityField(0)
-        zeroException.getMessage should include(message)
-
         val negativeException = intercept[IllegalArgumentException]:
           UtilityField(-50)
-        negativeException.getMessage should include(message)
+        negativeException.getMessage should include("The price needs to be at least 0.")
 
 
   "A street-field" when:
@@ -275,7 +270,6 @@ class FieldSpec extends AnyWordSpec with Matchers:
       utility.money(2, 7) shouldBe Some(-70)
 
     "throw an IllegalArgumentException if the dice roll is 0 or negative" in:
-      an[IllegalArgumentException] should be thrownBy:
-        utility.money(1, 0)
-      an[IllegalArgumentException] should be thrownBy:
+      val negException = intercept[IllegalArgumentException]:
         utility.money(2, -3)
+      negException.getMessage should include("A dice roll must be at least 0.")

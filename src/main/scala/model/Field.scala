@@ -75,7 +75,8 @@ trait ActionField() extends Field:
 trait PropertyField extends ActionField:
   override def name: String = "Property"
   def price: Int
-  require(price >= 0, "The price needs to be at least 0.")
+  protected def validatePrice(price: Int): Unit =
+    require(price >= 0, "The price needs to be at least 0.")
 
 /**
  * A field where a player needs to pay rent.
@@ -104,6 +105,7 @@ enum DevelopmentLevel:
 case class StreetField(price: Int,
   rentTable: RentStructure, houseCost: Int, override val name: String = "Street", hotelCost: Int)
   extends PropertyField, RentField[DevelopmentLevel]:
+  validatePrice(price)
   require(houseCost > 0 && hotelCost > 0,
     "The house/hotel-cost must be higher than 0.")
   require(houseCost <= hotelCost,
@@ -128,6 +130,7 @@ case class StationField(price: Int, override val name: String = "Station",
   // The rent depending on the amount of stations the player owns.
   rentTable: Vector[Int] = Vector(25, 50, 100, 200)
                        ) extends PropertyField, RentField[Int]:
+  validatePrice(price)
   require(rentTable.nonEmpty, "The rentTable cannot be empty.")
   /**
    * @param ownedStationsCount the total amount of stations this player owns
@@ -140,8 +143,12 @@ case class StationField(price: Int, override val name: String = "Station",
 case class UtilityField(price: Int, override val name: String = "Utility",
                         rentTable: Vector[Int] = Vector(4, 10))
   extends PropertyField, RentField[(Int, Int)]:
+  validatePrice(price)
   
   def calculateRent(context: (Int, Int)): Option[Int] = {
     val (ownedUtilitiesCount, diceRoll) = context
+    
+    require(diceRoll >= 0, "A dice roll must be at least 0.")
+    
     Option(rentTable(ownedUtilitiesCount - 1) * diceRoll)
   }
