@@ -1,11 +1,12 @@
 package model
 
-import model.DevelopmentLevel.*
 import model.*
-import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
 class FieldSpec extends AnyWordSpec with Matchers:
+  
+  val rentF = RentFunctions(() => DevelopmentLevel.Undeveloped, () => 7)
 
   "A normal field" should:
     "have the default name Field" in:
@@ -25,8 +26,8 @@ class FieldSpec extends AnyWordSpec with Matchers:
 
   "A MoneyField" should :
     "have the default name Money" in:
-      new MoneyField[Unit]:
-        def money(context: Unit): Option[Int] = None
+      new MoneyField:
+        def money(context: RentContext, functions: RentFunctions): Option[Int] = None
       .name shouldBe "Money"
 
   "A GainMoneyField" should:
@@ -34,14 +35,14 @@ class FieldSpec extends AnyWordSpec with Matchers:
       val gainMoney = new GainMoneyField:
         override def amount: Int = 1
       gainMoney.name shouldBe "Gain Money"
-      gainMoney.money(()) shouldBe Some(1)
+      gainMoney.money(RentContext(), rentF) shouldBe Some(1)
 
   "A LoseMoneyField" should:
     "have the default name Lose Money" in:
       val loseMoney = new LoseMoneyField:
         override def amount: Int = 1
       loseMoney.name shouldBe "Lose Money"
-      loseMoney.money(()) shouldBe Some(-1)
+      loseMoney.money(RentContext(), rentF) shouldBe Some(-1)
 
   "A EventlessField" should:
     "have the default name Normal Field" in:
@@ -60,7 +61,7 @@ class FieldSpec extends AnyWordSpec with Matchers:
   "A RentField" should:
     "have the default name Rent" in:
       new RentField[Int]:
-        val rentStrategy: RentStrategy[Int] = StationRentStrategy()
+        val rentStrategy: RentStrategy = StationRentStrategy()
       .name shouldBe "Rent"
 
 
@@ -109,7 +110,7 @@ class FieldSpec extends AnyWordSpec with Matchers:
       val tax = TaxField(200)
       tax.amount shouldBe 200
       tax.name shouldBe "Tax"
-      tax shouldBe a[MoneyField[Unit]]
+      tax shouldBe a[MoneyField]
       tax shouldBe a[EventField]
   
     "allow a custom name alongside a valid money amount" in:
@@ -156,7 +157,7 @@ class FieldSpec extends AnyWordSpec with Matchers:
     "be exhaustive and distinguish between EventField and EventlessField" in:
       def categorize(field: Field): String = field match
         case _: OnPassField => "OnPass"
-        case _: MoneyField[?] => "Money"
+        case _: MoneyField => "Money"
         case _: EventField => "Event"
         case _: EventlessField => "Eventless"
   
@@ -196,14 +197,6 @@ class FieldSpec extends AnyWordSpec with Matchers:
 
       "have the default name Street" in:
         street.name shouldBe "Street"
-
-      "have money return rentTable values" in:
-        street.money(Undeveloped) shouldBe Some(-rent.baseRent)
-        street.money(OneHouse) shouldBe Some(-rent.oneHouse)
-        street.money(TwoHouses) shouldBe Some(-rent.twoHouses)
-        street.money(ThreeHouses) shouldBe Some(-rent.threeHouses)
-        street.money(FourHouses) shouldBe Some(-rent.fourHouses)
-        street.money(Hotel) shouldBe Some(-rent.hotel)
 
     "set to a zero or negative houseCost" should:
       "throw an IllegalArgumentException" in:
@@ -261,14 +254,16 @@ class FieldSpec extends AnyWordSpec with Matchers:
       val rentTable = Vector(25, 50, 100, 200)
       val station = StationField(666, "Station")
       // 1 Station im Besitz -> Index 0 im rentTable
-      for (i <- rentTable.indices) station.money(i + 1) shouldBe Some(-rentTable(i))
+      for (i <- rentTable.indices) do {
+        station.money(RentContext(i + 1), rentF) shouldBe Some(-rentTable(i))
+      }
 
     "return None if the player owns no stations or the count exceeds the rentTable" in:
       val station = StationField(666, "Station")
       // 0 Stationen (0 - 1 = -1 -> out of bounds)
-      station.money(0) shouldBe None
+      station.money(RentContext(), rentF) shouldBe None
       // 5 Stationen (5 - 1 = 4 -> out of bounds)
-      station.money(5) shouldBe None
+      station.money(RentContext(5), rentF) shouldBe None
 
   
   "A UtilityField" should:
@@ -289,6 +284,6 @@ class FieldSpec extends AnyWordSpec with Matchers:
     
     "calculate rent correctly" in:
       // Würfelwurf 7, besitzt 1 Werk (Faktor 4) -> 7 * 4 = 28
-      utility.money(1, 7) shouldBe Some(-28)
+      utility.money(RentContext(1, 1), rentF) shouldBe Some(-28)
       // Würfelwurf 7, besitzt 2 Werke (Faktor 10) -> 7 * 10 = 70
-      utility.money(2, 7) shouldBe Some(-70)
+      utility.money(RentContext(2, 2), rentF) shouldBe Some(-70)

@@ -1,7 +1,7 @@
 package model
 
 class RandomDice extends Dice:
-  def roll(): (Int, Int) =
+  def roll: (Int, Int) =
     (scala.util.Random.between(1, 7), scala.util.Random.between(1, 7))
 
 class FixedDice(initValues: (Int, Int)) extends Dice:
@@ -13,5 +13,5 @@ class FixedDice(initValues: (Int, Int)) extends Dice:
 
     values = newValues
 
-  def roll(): (Int, Int) =
+  def roll: (Int, Int) =
     values

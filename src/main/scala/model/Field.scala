@@ -29,21 +29,23 @@ case object GoToJailField extends OnEnterField:
 /**
  * A field which gives/takes a (constant) number of money.
  */
-trait MoneyField[C] extends EventField:
+trait MoneyField extends EventField:
   override def name = "Money"
-  def money(context: C): Option[Int]
+  def money(context: RentContext, functions: RentFunctions): Option[Int]
   validateName(name)
 
-trait GainMoneyField extends MoneyField[Unit]:
+trait GainMoneyField extends MoneyField:
   override def name = "Gain Money"
   def amount: Int
-  final override def money(context: Unit): Option[Int] = Some(amount)
+  final override def money(context: RentContext,
+    functions: RentFunctions): Option[Int] = Some(amount)
   require(amount > 0, "Money gained must be more than 0.")
   
-trait LoseMoneyField extends MoneyField[Unit]:
+trait LoseMoneyField extends MoneyField:
   override def name = "Lose Money"
   def amount: Int
-  final override def money(context: Unit): Option[Int] = Some(-amount)
+  final override def money(context: RentContext,
+    functions: RentFunctions): Option[Int] = Some(-amount)
   require(amount > 0, "Money lost must be more than 0.")
 
 case class StartField(amount: Int, override val name: String = "Start")
@@ -80,15 +82,15 @@ trait PropertyField extends ActionField:
  * A field where a player needs to pay rent.
  * @tparam C The context required.
  */
-trait RentField[C] extends MoneyField[C], OnEnterField:
+trait RentField[C] extends MoneyField, OnEnterField:
   override def name = "Rent"
-  val rentStrategy: RentStrategy[C]
-  final override def money(context: C): Option[Int] =
-    rentStrategy.calculateRent(context).map(-_)
+  val rentStrategy: RentStrategy
+  final override def money(context: RentContext, functions: RentFunctions): Option[Int] =
+    rentStrategy.calculateRent(context, functions).map(-_)
 
 
 case class StreetField(price: Int,
-  rentStrategy: RentStrategy[DevelopmentLevel], houseCost: Int,
+  rentStrategy: RentStrategy, houseCost: Int,
   override val name: String = "Street", hotelCost: Int)
   extends PropertyField, RentField[DevelopmentLevel]:
   validatePrice(price)
@@ -98,7 +100,7 @@ case class StreetField(price: Int,
     "A hotel should cost the same or more than a house")
 
 object StreetField:
-  def apply(price: Int, rentStrategy: RentStrategy[DevelopmentLevel],
+  def apply(price: Int, rentStrategy: RentStrategy,
             houseCost: Int, name: String): StreetField =
     new StreetField(price, rentStrategy, houseCost, name, houseCost)
 
@@ -114,7 +116,7 @@ object StreetField:
 
 
 case class StationField(price: Int, override val name: String = "Station",
-  rentStrategy: RentStrategy[Int]) extends PropertyField, RentField[Int]:
+  rentStrategy: RentStrategy) extends PropertyField, RentField[Int]:
   validatePrice(price)
 
 object StationField:
@@ -126,7 +128,7 @@ object StationField:
 
 
 case class UtilityField(price: Int, override val name: String = "Utility",
-                        rentStrategy: RentStrategy[(Int, Int)])
+                        rentStrategy: RentStrategy)
   extends PropertyField, RentField[(Int, Int)]:
   validatePrice(price)
 

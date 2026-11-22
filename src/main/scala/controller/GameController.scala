@@ -34,13 +34,12 @@ class GameController(
 
   def buyProperty(): ResultStatus =
     val player  = state.getCurrentPlayer
-    val field   = state.board.get(player.position)
     val fieldId = player.position
 
     state.propertyMap.get(fieldId) match
       case Some(ownerId) if ownerId == state.getCurrentPlayer.id => OwnerIsYou
       case Some(_)                                               => AlreadyOwned
-      case None => field match
+      case None => state.board.get(player.position) match
         case property: PropertyField =>
           if player.money < property.price then
             InsufficientFunds

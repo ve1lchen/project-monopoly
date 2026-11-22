@@ -16,14 +16,14 @@ enum DevelopmentLevel:
   case Undeveloped, OneHouse, TwoHouses, ThreeHouses, FourHouses, Hotel
 
 
-trait RentStrategy[C]:
-  def calculateRent(context: C): Option[Int]
+trait RentStrategy:
+  def calculateRent(context: RentContext, rentFunctions: RentFunctions): Option[Int]
 
 
 case class StreetRentStrategy(rentTable: RentStructure)
-  extends RentStrategy[DevelopmentLevel]:
-  override def calculateRent(developmentLevel: DevelopmentLevel): Option[Int] =
-    Some(developmentLevel match
+  extends RentStrategy:
+  override def calculateRent(context: RentContext, rentFunctions: RentFunctions): Option[Int] =
+    Some(rentFunctions.level() match
       case Undeveloped => rentTable.baseRent
       case OneHouse => rentTable.oneHouse
       case TwoHouses => rentTable.twoHouses
@@ -32,21 +32,17 @@ case class StreetRentStrategy(rentTable: RentStructure)
       case Hotel => rentTable.hotel)
 
 case class StationRentStrategy(rentTable: Vector[Int] = Vector(25, 50, 100, 200))
-  extends RentStrategy[Int]:
+  extends RentStrategy:
   require(rentTable.nonEmpty, "The rentTable cannot be empty.")
-
-  /**
-   * @param ownedStationsCount the total amount of stations this player owns
-   * @return the rent or None
-   */
-  override def calculateRent(ownedStationsCount: Int): Option[Int] =
-    rentTable.lift(ownedStationsCount - 1)
+  
+  override def calculateRent(context: RentContext, rentFunctions: RentFunctions): Option[Int] =
+    rentTable.lift(context.ownedStationsCount - 1)
     
 case class UtilityRentStrategy(rentTable: Vector[Int] = Vector(4, 10))
-  extends RentStrategy[(Int, Int)]:
-  override def calculateRent(context: (Int, Int)): Option[Int] =
-    val (ownedUtilitiesCount, diceRoll) = context
+  extends RentStrategy:
+  override def calculateRent(context: RentContext, rentFunctions: RentFunctions): Option[Int] =
+    val roll = rentFunctions.diceRoll()
+    
+    require(roll >= 0, "A dice roll must be at least 0.")
 
-    require(diceRoll >= 0, "A dice roll must be at least 0.")
-
-    rentTable.lift(ownedUtilitiesCount - 1).map(_ * diceRoll)
+    rentTable.lift(context.ownedUtilitiesCount - 1).map(_ * roll)

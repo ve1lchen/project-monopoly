@@ -5,6 +5,7 @@ case class GameState(
     currentPlayerIndex: Int = 0,
     isGameOver: Boolean = false,
     propertyMap: Map[Int, Int] = Map.empty, // FieldId: PlayerID
+    levels: Map[Int, DevelopmentLevel] = Map.empty, // FieldId, Level
     board: Board = StandardBoard,
     lastRoll: Option[(Int, (Int, Int))] = None, // PlayerID, rolled
     turnState: TurnState = AwaitingRollState
@@ -32,15 +33,25 @@ case class GameState(
    * @param rolled the dice roll
    */
   def movePlayer(rolled: (Int, Int)): GameState =
-    val newPosition = board.relativePosition(players(currentPlayerIndex)
-      .position + rolled._2 + rolled._1)
+    val currentPlayer = players(currentPlayerIndex)
+    val sumRoll = rolled._2 + rolled._1
+
+    val oldPosition = currentPlayer.position
+    val newPosition = board.relativePosition(
+      oldPosition + sumRoll)
+
+    val events = board.getEvents(oldPosition, sumRoll)
+
+    for i <- 0 until events.size - 1 do events(i) match
+      case startField: StartField => 
+
     val updatedPlayers = players.updated(
       currentPlayerIndex,
-      players(currentPlayerIndex).changePosition(newPosition)
+      currentPlayer.changePosition(newPosition)
     )
     copy(
       players = updatedPlayers,
-      lastRoll = Some(currentPlayerIndex, (rolled._1, rolled._2)),
+      lastRoll = Some(currentPlayerIndex, rolled),
       turnState = AwaitingActionState
     )
 
@@ -59,6 +70,9 @@ case class GameState(
   def getCurrentField(player: Player = getCurrentPlayer): Field =
     board.get(player.position)
 
+  def getCurrentLevel(player: Player = getCurrentPlayer): Option[DevelopmentLevel] =
+    levels.get(player.position)
+  
   def getCurrentFieldOwner: Option[Player] =
     propertyMap.get(getCurrentPlayer.position)
       .flatMap: id =>

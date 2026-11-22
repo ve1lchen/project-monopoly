@@ -1,4 +1,4 @@
 package model
 
 trait Dice:
-  def roll(): (Int, Int)
+  def roll: (Int, Int)
