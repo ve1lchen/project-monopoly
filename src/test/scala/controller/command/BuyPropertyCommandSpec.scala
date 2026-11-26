@@ -10,7 +10,7 @@ class BuyPropertyCommandSpec extends AnyWordSpec with Matchers:
   "BuyPropertyCommand" should:
     "execute without changing the state when the current field cannot be purchased" in:
       val state = GameState(
-        players = Vector(Player("Alice"), Player("Bob"))
+        players = Vector(Player("Alice", id = 0), Player("Bob", id = 1))
       )
       val controller = GameController(state, new FixedDice((2, 3)))
       val command    = BuyPropertyCommand(controller)

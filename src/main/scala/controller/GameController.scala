@@ -53,7 +53,8 @@ case class GameController(
         state = updatedState
         notifyObservers()
 
-  def buyProperty(player: Player, field: Field): ResultStatus =
+  def buyProperty(playerId: Int, field: Field): ResultStatus =
+    val player = state.players(playerId)
     val fieldId = player.position
 
     state.propertyMap.get(fieldId) match
@@ -76,7 +77,8 @@ case class GameController(
         case _ =>
           NotPurchasable
 
-  def undoBuy(player: Player, field: Field): Unit =
+  def undoBuy(playerId: Int, field: Field): Unit =
+    val player = state.players(playerId)
     val fieldId = state.board.fields.indexOf(field)
     field match
       case property: PropertyField

@@ -59,7 +59,8 @@ class GameControllerSpec extends AnyWordSpec with Matchers:
 
     "not be able to buy property with insufficient money" in:
       val players: Vector[Player] =
-        Vector(Player("Alice", money = 0, position = 3), Player("Renee"))
+        Vector(Player("Alice", money = 0, position = 3, id = 0),
+          Player("Renee", id = 1))
       val initialState = GameState(players)
       val controller   = GameController(initialState, new FixedDice((2, 1)))
       BuyPropertyCommand(controller).execute()
@@ -76,7 +77,8 @@ class GameControllerSpec extends AnyWordSpec with Matchers:
       controller.getState shouldBe initialState
 
     "not be able to buy Start field" in:
-      val players: Vector[Player] = Vector(Player("Alice"), Player("Renee"))
+      val players: Vector[Player] = Vector(Player("Alice", id = 0),
+        Player("Renee", id = 1))
       val initialState            = GameState(players)
       val controller = GameController(initialState, new FixedDice((2, 1)))
       BuyPropertyCommand(controller).execute()
@@ -94,7 +96,7 @@ class GameControllerSpec extends AnyWordSpec with Matchers:
         new FixedDice((2, 1))
       )
 
-      ownController.buyProperty(players.head,
+      ownController.buyProperty(players.head.id,
         ownController.getState.board.get(
           players.head.position)) shouldBe model.ResultStatus.OwnerIsYou
 
@@ -103,7 +105,7 @@ class GameControllerSpec extends AnyWordSpec with Matchers:
         new FixedDice((2, 1))
       )
 
-      otherController.buyProperty(players.head,
+      otherController.buyProperty(players.head.id,
         otherController.getState.board.get(
           players.head.position)
       ) shouldBe model.ResultStatus.AlreadyOwned
@@ -123,7 +125,7 @@ class GameControllerSpec extends AnyWordSpec with Matchers:
         new FixedDice((2, 1))
       )
 
-      controller.buyProperty(players.head, field) shouldBe model.ResultStatus.Success
+      controller.buyProperty(players.head.id, field) shouldBe model.ResultStatus.Success
       controller.getState.players(0).money shouldBe 0
       controller.getState.propertyMap should contain(3 -> 0)
 
