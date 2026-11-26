@@ -26,6 +26,11 @@ case class GameState(
     else (currentPlayerIndex + 1) % players.length
     copy(currentPlayerIndex = nextIndex, turnState = AwaitingRollState)
 
+  def undoNextTurn(isDouble: Boolean): GameState =
+    val prevIndex = if isDouble then currentPlayerIndex
+    else (currentPlayerIndex - 1 + players.length) % players.length
+    copy(currentPlayerIndex = prevIndex, turnState = AwaitingActionState)
+
   /*
   Changes player`s position and sets turnState = AwaitingActionState
    */
@@ -41,12 +46,28 @@ case class GameState(
       lastRoll = Some(currentPlayerIndex, (rolled._1, rolled._2)),
       turnState = AwaitingActionState
     )
+    
+  def undoMovePlayer(diceRoll: (Int, Int)): GameState =
+    val oldPosition = board.relativePosition(players(currentPlayerIndex)
+      .position - diceRoll._1 - diceRoll._2)
+    val updatedPlayers = players.updated(
+      currentPlayerIndex,
+      players(currentPlayerIndex).changePosition(oldPosition)
+    )
+    copy(
+      players = updatedPlayers,
+      turnState = AwaitingRollState
+    )
 
   /*
   Adds new field:player relation to the map
    */
   def updatePropertyMap(fieldId: Int, playerId: Int): GameState =
     val updatedMap = propertyMap + (fieldId -> playerId)
+    copy(propertyMap = updatedMap)
+
+  def removePropertyMap(fieldId: Int): GameState =
+    val updatedMap = propertyMap - fieldId
     copy(propertyMap = updatedMap)
 
   def getCurrentPlayer: Player =

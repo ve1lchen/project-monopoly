@@ -3,7 +3,7 @@ package controller
 import model.ResultStatus.{AlreadyOwned, InsufficientFunds, NotPurchasable, OwnerIsYou, Success}
 import model.*
 
-class GameController(
+case class GameController(
     initialState: GameState,
     dice: Dice
 ):
@@ -21,9 +21,16 @@ class GameController(
   /*
   Rolls dices -> saves the travel -> processes the field
    */
-  def rollDice(): Unit =
+  def rollDice(diceRoll : (Int, Int)): Unit =
     state.turnState
-      .roll(state, dice)
+      .roll(state, diceRoll)
+      .foreach: updatedState =>
+        state = updatedState
+        notifyObservers()
+        
+  def undoRollDice(diceRoll: (Int, Int)): Unit =
+    state.turnState
+      .undoRoll(state, diceRoll)
       .foreach: updatedState =>
         state = updatedState
         notifyObservers()
@@ -37,10 +44,15 @@ class GameController(
       .foreach: updatedState =>
         state = updatedState
         notifyObservers()
+        
+  def undoEndTurn(): Unit =
+    state.turnState
+      .undoEndTurn(state)
+      .foreach: updatedState =>
+        state = updatedState
+        notifyObservers()
 
-  def buyProperty(): ResultStatus =
-    val player  = state.getCurrentPlayer
-    val field   = state.board.get(player.position)
+  def buyProperty(player: Player, field: Field): ResultStatus =
     val fieldId = player.position
 
     state.propertyMap.get(fieldId) match
@@ -62,6 +74,21 @@ class GameController(
             Success
         case _ =>
           NotPurchasable
+
+  def undoBuy(player: Player, field: Field): Unit =
+    val fieldId = state.board.fields.indexOf(field)
+    field match
+      case property: PropertyField
+        if state.propertyMap.get(fieldId).contains(player.id) =>
+        val updatedPlayers = state.players.updated(
+          state.currentPlayerIndex,
+          player.receive(property.price)
+        )
+        state = state
+          .copy(players = updatedPlayers)
+          .removePropertyMap(fieldId)
+        notifyObservers()
+      case _ => ()
 
   def getState: GameState =
     state

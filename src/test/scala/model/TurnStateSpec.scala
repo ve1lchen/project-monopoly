@@ -17,7 +17,7 @@ class TurnStateSpec extends AnyWordSpec with Matchers:
 
     "allow rolling dice" in:
       val state  = initialState
-      val result = AwaitingRollState.roll(state, new FixedDice((2, 3)))
+      val result = AwaitingRollState.roll(state, (2, 3))
 
       result shouldBe defined
       result.get.turnState shouldBe AwaitingActionState
@@ -33,7 +33,7 @@ class TurnStateSpec extends AnyWordSpec with Matchers:
 
       AwaitingActionState.roll(
         state,
-        new FixedDice((2, 3))
+        (2, 3)
       ) shouldBe None
 
     "allow ending the turn" in:
