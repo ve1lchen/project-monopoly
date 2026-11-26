@@ -1,6 +1,6 @@
 package model
 
-import controller.command.GameCommand
+import controller.command.{GameCommand, RollDiceCommand}
 
 class UndoManager:
   private var undoStack: List[GameCommand] = Nil
@@ -11,7 +11,11 @@ class UndoManager:
 
   def undoStep(): Unit =
     undoStack match
-      case  Nil =>
+      case Nil =>
       case head::stack =>
+        head match
+          case comm: RollDiceCommand => 
+            return;
+          case _ =>
         head.undo()
         undoStack = stack

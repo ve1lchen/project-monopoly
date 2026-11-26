@@ -5,7 +5,8 @@ import model.*
 
 case class GameController(
     initialState: GameState,
-    dice: Dice
+    dice: Dice = RandomDice(),
+    undoManager: UndoManager = UndoManager()
 ):
 
   private var state: GameState            = initialState

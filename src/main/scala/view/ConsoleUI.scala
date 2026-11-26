@@ -44,9 +44,11 @@ class ConsoleUI(controller: GameController) extends Observer:
         case "0" =>
           running = false
           exitResults()
+        case "4" =>
+          controller.undoManager.undoStep()
         case _ =>
           getCommand(input) match
-            case Some(command) => command.execute()
+            case Some(command) => controller.undoManager.doStep(command)
             case None          => render()
 
   def render(): Unit =
@@ -80,6 +82,7 @@ class ConsoleUI(controller: GameController) extends Observer:
          |[1] Roll
          |[2] Buy
          |[3] End turn
+         |[4] Undo
          |
          |[0] Exit
          |""".stripMargin
