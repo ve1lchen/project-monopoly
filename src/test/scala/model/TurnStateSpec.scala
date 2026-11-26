@@ -23,6 +23,17 @@ class TurnStateSpec extends AnyWordSpec with Matchers:
       result.get.turnState shouldBe AwaitingActionState
       result.get.getCurrentPlayer.position shouldBe 5
 
+    "move to the next player when no previous roll exists" in :
+      val state = initialState.copy(
+        turnState = AwaitingRollState,
+        lastRoll = None
+      )
+
+      val result = AwaitingRollState.undoEndTurn(state)
+
+      result shouldBe defined
+      result.get.currentPlayerIndex shouldBe 1
+
     "reject ending the turn" in:
       AwaitingRollState.endTurn(initialState) shouldBe None
 
@@ -62,6 +73,17 @@ class TurnStateSpec extends AnyWordSpec with Matchers:
       result shouldBe defined
       result.get.currentPlayerIndex shouldBe 0
       result.get.turnState shouldBe AwaitingRollState
+
+    "move to the next player when no previous roll exists" in :
+      val state = initialState.copy(
+        turnState = AwaitingActionState,
+        lastRoll = None
+      )
+
+      val result = AwaitingActionState.endTurn(state)
+
+      result shouldBe defined
+      result.get.currentPlayerIndex shouldBe 1
 
     "reject undoing the turn" in:
       AwaitingActionState.undoEndTurn(initialState) shouldBe None

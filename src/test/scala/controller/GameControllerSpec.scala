@@ -52,6 +52,17 @@ class GameControllerSpec extends AnyWordSpec with Matchers:
         .players(newState.currentPlayerIndex)
         .position shouldBe 0
 
+    "undo buying the correct field" in:
+      val street = StreetField(1,RentStructure(1,2,3,4,5,6), 1, "s")
+      val board = MBoard(Vector(street, street))
+      val players: Vector[Player] = Vector(
+        Player("Alice", id = 0), Player("Renee", id = 1))
+      val controller = GameController(GameState(players,
+        propertyMap = Map(0 -> 1, 1 -> 1), board = board))
+      controller.undoBuy(1, street)
+
+      controller.getState.propertyMap shouldBe Map(1 -> 1)
+
     "manage turn with double" in:
       val players: Vector[Player] = Vector(Player("Alice"), Player("Renee"))
       val controller = GameController(GameState(players), new FixedDice((3, 3)))
@@ -65,7 +76,7 @@ class GameControllerSpec extends AnyWordSpec with Matchers:
       val newState = controller.getState
       newState.currentPlayerIndex shouldBe 0
       newState.players(newState.currentPlayerIndex).position shouldBe 6
-      
+
 
     "manage turn with START crossing" in:
       val players: Vector[Player] =
