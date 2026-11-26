@@ -24,11 +24,13 @@ class ConsoleUI(controller: GameController) extends Observer:
       println(s"   Properties: ${property.mkString(", ")}")
       println("-------------------------------------")
 
-  private val commands: Map[String, GameCommand] = Map(
-    "1" -> RollDiceCommand(controller),
-    "2" -> BuyPropertyCommand(controller),
-    "3" -> EndTurnCommand(controller)
-  )
+  private def getCommand(input: String): Option[GameCommand] =
+    input match {
+      case "1" => Some(RollDiceCommand(controller))
+      case "2" => Some(BuyPropertyCommand(controller))
+      case "3" => Some(EndTurnCommand(controller))
+      case _ => None
+    }
 
   def run(): Unit =
     var running = true
@@ -42,9 +44,11 @@ class ConsoleUI(controller: GameController) extends Observer:
         case "0" =>
           running = false
           exitResults()
+        case "4" =>
+          controller.undoManager.undoStep()
         case _ =>
-          commands.get(input) match
-            case Some(command) => command.execute()
+          getCommand(input) match
+            case Some(command) => controller.undoManager.doStep(command)
             case None          => render()
 
   def render(): Unit =
@@ -78,6 +82,7 @@ class ConsoleUI(controller: GameController) extends Observer:
          |[1] Roll
          |[2] Buy
          |[3] End turn
+         |[4] Undo
          |
          |[0] Exit
          |""".stripMargin
