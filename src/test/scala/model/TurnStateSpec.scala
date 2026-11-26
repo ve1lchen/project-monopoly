@@ -26,6 +26,9 @@ class TurnStateSpec extends AnyWordSpec with Matchers:
     "reject ending the turn" in:
       AwaitingRollState.endTurn(initialState) shouldBe None
 
+    "reject undoing the roll" in:
+      AwaitingRollState.undoRoll(initialState, (1, 1)) shouldBe None
+
   "AwaitingActionState" should:
 
     "reject rolling dice" in:
@@ -59,3 +62,6 @@ class TurnStateSpec extends AnyWordSpec with Matchers:
       result shouldBe defined
       result.get.currentPlayerIndex shouldBe 0
       result.get.turnState shouldBe AwaitingRollState
+
+    "reject undoing the turn" in:
+      AwaitingActionState.undoEndTurn(initialState) shouldBe None

@@ -149,6 +149,11 @@ class ConsoleUISpec extends AnyWordSpec with Matchers:
       controller.getState.currentPlayerIndex shouldBe 1
       controller.getState.turnState shouldBe AwaitingRollState
 
+    "undo end of turn" in:
+      val (controller, _) = runUi("1\n3\n4\n0\n")
+      controller.getState.currentPlayerIndex shouldBe 0
+      controller.getState.turnState shouldBe AwaitingActionState
+
     "remember who rolled after the turn ends" in:
       val (controller, text) = runUi("1\n3\n0\n")
       controller.getState.lastRoll shouldBe Some((0, (2, 3)))
