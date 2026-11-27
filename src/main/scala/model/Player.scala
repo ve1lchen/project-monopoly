@@ -7,6 +7,7 @@ case class Player(
     inJail: Boolean = false,
     onVacation: Boolean = false,
     isBankrupt: Boolean = false,
+    rentContext: RentContext = RentContext(),
     id: Int = -1
 ):
   def pay(amount: Int): Player =
