@@ -28,6 +28,11 @@ case class GameState(
     else (currentPlayerIndex + 1) % players.length
     copy(currentPlayerIndex = nextIndex, turnState = AwaitingRollState)
 
+  def undoNextTurn(isDouble: Boolean): GameState =
+    val prevIndex = if isDouble then currentPlayerIndex
+    else (currentPlayerIndex - 1 + players.length) % players.length
+    copy(currentPlayerIndex = prevIndex, turnState = AwaitingActionState)
+
   /**
    * Changes player`s position and sets turnState = AwaitingActionState
    * @param rolled the dice roll
@@ -43,7 +48,7 @@ case class GameState(
     val events = board.getEvents(oldPosition, sumRoll)
 
     for i <- 0 until events.size - 1 do events(i) match
-      case startField: StartField => 
+      case startField: StartField =>
 
     val updatedPlayers = players.updated(
       currentPlayerIndex,
@@ -55,6 +60,18 @@ case class GameState(
       turnState = AwaitingActionState
     )
 
+  def undoMovePlayer(diceRoll: (Int, Int)): GameState =
+    val oldPosition = board.relativePosition(players(currentPlayerIndex)
+      .position - diceRoll._1 - diceRoll._2)
+    val updatedPlayers = players.updated(
+      currentPlayerIndex,
+      players(currentPlayerIndex).changePosition(oldPosition)
+    )
+    copy(
+      players = updatedPlayers,
+      turnState = AwaitingRollState
+    )
+
   /**
    * Adds new field:player relation to the map
    * @param fieldId the id of the field
@@ -62,6 +79,10 @@ case class GameState(
    */
   def updatePropertyMap(fieldId: Int, playerId: Int): GameState =
     val updatedMap = propertyMap + (fieldId -> playerId)
+    copy(propertyMap = updatedMap)
+
+  def removePropertyMap(fieldId: Int): GameState =
+    val updatedMap = propertyMap - fieldId
     copy(propertyMap = updatedMap)
 
   def getCurrentPlayer: Player =
@@ -72,9 +93,8 @@ case class GameState(
 
   def getCurrentLevel(player: Player = getCurrentPlayer): Option[DevelopmentLevel] =
     levels.get(player.position)
-  
+
   def getCurrentFieldOwner: Option[Player] =
     propertyMap.get(getCurrentPlayer.position)
       .flatMap: id =>
         players.find(_.id == id)
-  

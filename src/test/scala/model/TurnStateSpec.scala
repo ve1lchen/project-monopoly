@@ -17,14 +17,28 @@ class TurnStateSpec extends AnyWordSpec with Matchers:
 
     "allow rolling dice" in:
       val state  = initialState
-      val result = AwaitingRollState.roll(state, new FixedDice((2, 3)))
+      val result = AwaitingRollState.roll(state, (2, 3))
 
       result shouldBe defined
       result.get.turnState shouldBe AwaitingActionState
       result.get.getCurrentPlayer.position shouldBe 5
 
+    "move to the next player when no previous roll exists" in :
+      val state = initialState.copy(
+        turnState = AwaitingRollState,
+        lastRoll = None
+      )
+
+      val result = AwaitingRollState.undoEndTurn(state)
+
+      result shouldBe defined
+      result.get.currentPlayerIndex shouldBe 1
+
     "reject ending the turn" in:
       AwaitingRollState.endTurn(initialState) shouldBe None
+
+    "reject undoing the roll" in:
+      AwaitingRollState.undoRoll(initialState, (1, 1)) shouldBe None
 
   "AwaitingActionState" should:
 
@@ -33,7 +47,7 @@ class TurnStateSpec extends AnyWordSpec with Matchers:
 
       AwaitingActionState.roll(
         state,
-        new FixedDice((2, 3))
+        (2, 3)
       ) shouldBe None
 
     "allow ending the turn" in:
@@ -59,3 +73,17 @@ class TurnStateSpec extends AnyWordSpec with Matchers:
       result shouldBe defined
       result.get.currentPlayerIndex shouldBe 0
       result.get.turnState shouldBe AwaitingRollState
+
+    "move to the next player when no previous roll exists" in :
+      val state = initialState.copy(
+        turnState = AwaitingActionState,
+        lastRoll = None
+      )
+
+      val result = AwaitingActionState.endTurn(state)
+
+      result shouldBe defined
+      result.get.currentPlayerIndex shouldBe 1
+
+    "reject undoing the turn" in:
+      AwaitingActionState.undoEndTurn(initialState) shouldBe None
