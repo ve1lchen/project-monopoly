@@ -24,11 +24,23 @@ case class RentContext(
 
           case _ => acc
           
-case class RentFunctions(level: () => DevelopmentLevel, diceRoll: () => Int)
+trait RentFunctions:
+  def developmentLevel: DevelopmentLevel
+  def diceRoll: Int
+
+case class DefaultRentFunctions(getLevel: () => DevelopmentLevel,
+                                 rollDice: () => Int) extends RentFunctions:
+
+  override def developmentLevel: DevelopmentLevel =
+    getLevel()
+
+  override def diceRoll: Int =
+    rollDice()
 
 
-case class RentCalculator(rentFunctions: RentFunctions):
-  def calculateRent(
+
+case class MoneyCalculator(rentFunctions: RentFunctions):
+  def calculateMoney(
     field: RentField[?],
     context: RentContext): Option[Int] =
     field.money(context, rentFunctions)

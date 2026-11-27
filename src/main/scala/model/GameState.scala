@@ -1,5 +1,7 @@
 package model
 
+import model.events.EventHandlerChain
+
 case class GameState(
     players: Vector[Player],
     currentPlayerIndex: Int = 0,
@@ -54,11 +56,15 @@ case class GameState(
       currentPlayerIndex,
       currentPlayer.changePosition(newPosition)
     )
-    copy(
+    val movedState = copy(
       players = updatedPlayers,
       lastRoll = Some(currentPlayerIndex, rolled),
       turnState = AwaitingActionState
     )
+
+    events.foldLeft(movedState) { (state, event) =>
+      EventHandlerChain.handle(event, state).getOrElse(state)
+    }
 
   def undoMovePlayer(diceRoll: (Int, Int)): GameState =
     val oldPosition = board.relativePosition(players(currentPlayerIndex)

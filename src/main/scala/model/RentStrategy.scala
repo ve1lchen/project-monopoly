@@ -23,7 +23,7 @@ trait RentStrategy:
 case class StreetRentStrategy(rentTable: RentStructure)
   extends RentStrategy:
   override def calculateRent(context: RentContext, rentFunctions: RentFunctions): Option[Int] =
-    Some(rentFunctions.level() match
+    Some(rentFunctions.developmentLevel match
       case Undeveloped => rentTable.baseRent
       case OneHouse => rentTable.oneHouse
       case TwoHouses => rentTable.twoHouses
@@ -41,7 +41,7 @@ case class StationRentStrategy(rentTable: Vector[Int] = Vector(25, 50, 100, 200)
 case class UtilityRentStrategy(rentTable: Vector[Int] = Vector(4, 10))
   extends RentStrategy:
   override def calculateRent(context: RentContext, rentFunctions: RentFunctions): Option[Int] =
-    val roll = rentFunctions.diceRoll()
+    val roll = rentFunctions.diceRoll
     
     require(roll >= 0, "A dice roll must be at least 0.")
 
